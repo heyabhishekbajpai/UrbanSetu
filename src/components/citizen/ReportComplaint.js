@@ -71,6 +71,7 @@ const ReportComplaint = () => {
     handleSubmit,
     setValue,
     watch,
+    getValues,
     formState: { errors },
   } = useForm({
     defaultValues: {
