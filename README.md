@@ -2,6 +2,8 @@
 
 > **आवाज़ उठाओ, बदलाव लाओ** (Raise Your Voice, Bring Change)
 
+<!-- Deployment fix: Updated to resolve Vercel build issues -->
+
 A modern, AI-powered civic issue reporting and resolution platform designed for mobile-first usage. UrbanSetu connects citizens with local authorities for faster, more efficient problem-solving through crowdsourced reporting and real-time tracking.
 
 ## 🌟 Features
