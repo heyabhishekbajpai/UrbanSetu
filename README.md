@@ -147,7 +147,7 @@ npm run build
 ## 📞 Support
 
 For support and questions:
-- **Email**: support@urbansetu.com
+- **Email**: bajpai.connect@gmail.com
 - **Documentation**: [docs.urbansetu.com](https://docs.urbansetu.com)
 
 ---
