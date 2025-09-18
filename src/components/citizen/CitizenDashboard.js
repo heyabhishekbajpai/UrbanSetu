@@ -54,7 +54,7 @@ const CitizenDashboard = () => {
         location: 'Main Road, Sector 15',
         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
         resolvedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        image: '/pothole.jpg'
+        image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg'
       },
       {
         id: '2',
@@ -65,7 +65,7 @@ const CitizenDashboard = () => {
         category: 'StreetLight',
         location: 'Park Road, Sector 12',
         createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        image: '/streetlight.jpg'
+        image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/streetlight.jpg'
       },
       {
         id: '3',
@@ -76,7 +76,7 @@ const CitizenDashboard = () => {
         category: 'Garbage',
         location: 'Residential Area, Sector 8',
         createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        image: '/garbage.png'
+        image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png'
       },
       {
         id: '4',
@@ -87,7 +87,7 @@ const CitizenDashboard = () => {
         category: 'Water',
         location: 'Near Community Center, Sector 5',
         createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        image: '/water.jpg'
+        image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/water.jpg'
       }
     ];
 

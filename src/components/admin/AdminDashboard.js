@@ -57,7 +57,7 @@ const AdminDashboard = () => {
           location: 'Main Road, Sector 15',
           reporter: 'Priya Sharma',
           createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          image: '/pothole.jpg'
+          image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg'
         },
         {
           id: '2',
@@ -70,7 +70,7 @@ const AdminDashboard = () => {
           location: 'Park Road, Sector 12',
           reporter: 'Rajesh Kumar',
           createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          image: '/streetlight.jpg'
+          image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/streetlight.jpg'
         },
         {
           id: '3',
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
           location: 'Residential Area, Sector 8',
           reporter: 'Anita Singh',
           createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          image: '/garbage.png'
+          image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png'
         },
         {
           id: '4',
@@ -96,7 +96,7 @@ const AdminDashboard = () => {
           location: 'Market Area, Sector 5',
           reporter: 'Vikram Patel',
           createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          image: '/water.jpg'
+          image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/water.jpg'
         }
       ];
 
