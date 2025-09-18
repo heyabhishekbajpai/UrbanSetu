@@ -1,128 +1,114 @@
-import React, { useEffect, useRef, useState, memo } from 'react';
-import { Wrapper, Status } from '@googlemaps/react-wrapper';
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import { Icon } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
-const render = (status) => {
-  switch (status) {
-    case Status.LOADING:
-      return <div className="flex items-center justify-center h-64 bg-gray-100 dark:bg-gray-800 rounded-lg">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-          <div className="text-gray-600 dark:text-gray-400">Loading Google Maps...</div>
-        </div>
-      </div>;
-    case Status.FAILURE:
-      return <div className="flex items-center justify-center h-64 bg-red-100 dark:bg-red-900/20 rounded-lg border-2 border-dashed border-red-300 dark:border-red-600">
-        <div className="text-center p-4">
-          <div className="w-12 h-12 mx-auto mb-4 text-red-500">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-red-800 dark:text-red-200 mb-2">
-            Google Maps Error
-          </h3>
-          <p className="text-sm text-red-600 dark:text-red-400 mb-3">
-            Unable to load Google Maps. This could be due to:
-          </p>
-          <div className="text-xs text-red-500 dark:text-red-500 space-y-1 text-left">
-            <p>• API key restrictions or billing issues</p>
-            <p>• Required APIs not enabled</p>
-            <p>• Network connectivity issues</p>
-            <p>• Browser security settings</p>
-          </div>
-        </div>
-      </div>;
-    default:
-      return null;
-  }
+// Fix for default markers in react-leaflet
+delete Icon.Default.prototype._getIconUrl;
+Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+// Custom marker icon
+const createCustomIcon = (color = '#3B82F6') => {
+  return new Icon({
+    iconUrl: `data:image/svg+xml;base64,${btoa(`
+      <svg width="25" height="41" viewBox="0 0 25 41" xmlns="http://www.w3.org/2000/svg">
+        <path fill="${color}" stroke="#fff" stroke-width="2" d="M12.5 0C5.6 0 0 5.6 0 12.5c0 12.5 12.5 28.5 12.5 28.5s12.5-16 12.5-28.5C25 5.6 19.4 0 12.5 0z"/>
+        <circle fill="#fff" cx="12.5" cy="12.5" r="6"/>
+      </svg>
+    `)}`,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [0, -41],
+  });
 };
 
-const MapComponent = ({ center, zoom, onLocationSelect, currentLocation }) => {
-  const ref = useRef(null);
-  const [map, setMap] = useState(null);
-  const markerRef = useRef(null);
+// Component to handle map events
+const MapEvents = ({ onLocationSelect, currentLocation }) => {
+  const [markerPosition, setMarkerPosition] = useState(currentLocation ? [currentLocation.latitude, currentLocation.longitude] : null);
+  
+  useMapEvents({
+    click: (e) => {
+      const { lat, lng } = e.latlng;
+      const newPosition = [lat, lng];
+      setMarkerPosition(newPosition);
+      onLocationSelect({ latitude: lat, longitude: lng });
+    },
+  });
 
+  // Update marker position when currentLocation changes
   useEffect(() => {
-    if (ref.current && !map) {
-      const newMap = new window.google.maps.Map(ref.current, {
-        center: center,
-        zoom: zoom,
-        mapTypeControl: true,
-        streetViewControl: false,
-        fullscreenControl: true,
-        zoomControl: true,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }]
-          }
-        ]
-      });
-
-      // Add click listener to map
-      newMap.addListener('click', (event) => {
-        const lat = event.latLng.lat();
-        const lng = event.latLng.lng();
-        onLocationSelect({ latitude: lat, longitude: lng });
-      });
-
-      setMap(newMap);
+    if (currentLocation) {
+      setMarkerPosition([currentLocation.latitude, currentLocation.longitude]);
     }
-  }, [center, zoom, onLocationSelect]);
+  }, [currentLocation]);
 
-  useEffect(() => {
-    if (map && currentLocation) {
-      // Remove existing marker
-      if (markerRef.current) {
-        markerRef.current.setMap(null);
-      }
-
-      // Add new marker
-      const newMarker = new window.google.maps.Marker({
-        position: { lat: currentLocation.latitude, lng: currentLocation.longitude },
-        map: map,
-        title: 'Issue Location',
-        draggable: true
-      });
-
-      // Add drag listener to marker
-      newMarker.addListener('dragend', (event) => {
-        const lat = event.latLng.lat();
-        const lng = event.latLng.lng();
-        onLocationSelect({ latitude: lat, longitude: lng });
-      });
-
-      markerRef.current = newMarker;
-    }
-  }, [map, currentLocation, onLocationSelect]);
-
-  return <div ref={ref} className="w-full h-64 rounded-lg" />;
+  return markerPosition ? (
+    <Marker 
+      position={markerPosition} 
+      icon={createCustomIcon('#3B82F6')}
+      draggable={true}
+      eventHandlers={{
+        dragend: (e) => {
+          const { lat, lng } = e.target.getLatLng();
+          setMarkerPosition([lat, lng]);
+          onLocationSelect({ latitude: lat, longitude: lng });
+        }
+      }}
+    >
+      <Popup>
+        <div className="text-center">
+          <p className="font-medium text-gray-900">Issue Location</p>
+          <p className="text-sm text-gray-600">
+            {markerPosition[0].toFixed(6)}, {markerPosition[1].toFixed(6)}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">Drag to adjust position</p>
+        </div>
+      </Popup>
+    </Marker>
+  ) : null;
 };
 
 const GoogleMap = memo(({ center, zoom = 15, onLocationSelect, currentLocation, className = "" }) => {
-  // Use the provided API key
-  const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'AIzaSyCL6nYRqmSxV7e3j-ephRZ-xbCHBwkmB8U';
+  const [mapCenter, setMapCenter] = useState(center || [26.8467, 80.9462]); // Default to Lucknow
+  
+  // Update map center when center prop changes
+  useEffect(() => {
+    if (center) {
+      setMapCenter([center.lat, center.lng]);
+    }
+  }, [center]);
 
-  // Debug logging
-  console.log('GoogleMap: API Key available:', !!apiKey);
-  console.log('GoogleMap: Center:', center);
-  console.log('GoogleMap: Current Location:', currentLocation);
+  const handleLocationSelect = useCallback((location) => {
+    onLocationSelect(location);
+  }, [onLocationSelect]);
 
   return (
     <div className={`w-full ${className}`}>
-      <Wrapper 
-        apiKey={apiKey} 
-        render={render}
-        libraries={['places']}
+      <MapContainer
+        center={mapCenter}
+        zoom={zoom}
+        className="w-full h-64 rounded-lg z-0"
+        zoomControl={true}
+        scrollWheelZoom={true}
+        doubleClickZoom={true}
+        dragging={true}
+        touchZoom={true}
+        boxZoom={true}
+        keyboard={true}
       >
-        <MapComponent
-          center={center}
-          zoom={zoom}
-          onLocationSelect={onLocationSelect}
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <MapEvents 
+          onLocationSelect={handleLocationSelect}
           currentLocation={currentLocation}
         />
-      </Wrapper>
+      </MapContainer>
     </div>
   );
 });
