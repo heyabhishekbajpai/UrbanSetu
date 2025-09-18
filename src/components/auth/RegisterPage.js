@@ -54,7 +54,7 @@ const RegisterPage = () => {
         >
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-              <img src="/logo.png" alt="UrbanSetu Logo" className="w-10 h-10 object-contain" />
+              <img src="https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png" alt="UrbanSetu Logo" className="w-10 h-10 object-contain" />
             </div>
             <span className="text-2xl font-bold text-gradient">UrbanSetu</span>
           </div>
