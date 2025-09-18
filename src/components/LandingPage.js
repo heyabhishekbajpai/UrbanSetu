@@ -83,8 +83,8 @@ const LandingPage = () => {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center space-x-2"
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                <Globe className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <img src="/logo.png" alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
               </div>
               <span className="text-xl font-bold text-gradient">UrbanSetu</span>
             </motion.div>
@@ -463,8 +463,8 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                  <img src="/logo.png" alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
                 </div>
                 <span className="text-xl font-bold">UrbanSetu</span>
               </div>

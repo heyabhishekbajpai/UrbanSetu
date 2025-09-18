@@ -53,8 +53,8 @@ const RegisterPage = () => {
           className="text-center mb-8"
         >
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-              <Globe className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+              <img src="/logo.png" alt="UrbanSetu Logo" className="w-10 h-10 object-contain" />
             </div>
             <span className="text-2xl font-bold text-gradient">UrbanSetu</span>
           </div>

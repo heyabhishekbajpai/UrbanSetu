@@ -149,8 +149,8 @@ const AdminDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <img src="/logo.png" alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
               </div>
               <div>
                 <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
