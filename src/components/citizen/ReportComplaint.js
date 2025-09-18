@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import toast from 'react-hot-toast';
 import GoogleMap from '../common/GoogleMap';
 
 // AI Model Integration
@@ -130,7 +129,7 @@ const ReportComplaint = () => {
         } catch (fallbackError) {
           console.error('Error loading fallback model:', fallbackError);
           setModelLoading(false);
-          toast.error('Failed to load AI model from both local and online sources');
+          console.error('Failed to load AI model from both local and online sources');
         }
       }
     };
@@ -150,19 +149,19 @@ const ReportComplaint = () => {
       
       recognitionInstance.onstart = () => {
         setIsListening(true);
-        toast.success('Listening... Speak now');
+        console.log('Listening... Speak now');
       };
       
       recognitionInstance.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         const currentDescription = getValues('description') || '';
         setValue('description', currentDescription + transcript);
-        toast.success('Voice transcribed successfully');
+        console.log('Voice transcribed successfully');
       };
       
       recognitionInstance.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        toast.error(`Speech recognition error: ${event.error}`);
+        console.error(`Speech recognition error: ${event.error}`);
         setIsListening(false);
       };
       
@@ -349,7 +348,7 @@ const ReportComplaint = () => {
     setCurrentAddress(address);
     setValue('address', address);
     
-    toast.success(`Location updated: ${address}`);
+    console.log(`Location updated: ${address}`);
   }, [setValue, reverseGeocode]);
 
   // Voice transcription functions
@@ -359,7 +358,7 @@ const ReportComplaint = () => {
         recognition.start();
       } catch (error) {
         console.error('Error starting speech recognition:', error);
-        toast.error('Failed to start voice transcription');
+        console.error('Failed to start voice transcription');
       }
     }
   };
@@ -392,12 +391,12 @@ const ReportComplaint = () => {
         (error) => {
           console.error('Error getting location:', error);
           setIsLoadingLocation(false);
-          toast.error('Failed to get location. Please enable location access.');
+          console.error('Failed to get location. Please enable location access.');
         }
       );
     } else {
       setIsLoadingLocation(false);
-      toast.error('Geolocation is not supported by this browser.');
+      console.error('Geolocation is not supported by this browser.');
     }
   };
 
@@ -414,11 +413,11 @@ const ReportComplaint = () => {
         })
         .catch((error) => {
           console.error('Error accessing camera:', error);
-          toast.error('Failed to access camera');
+          console.error('Failed to access camera');
           setIsCapturing(false);
         });
     } else {
-      toast.error('Camera not supported');
+      console.error('Camera not supported');
       setIsCapturing(false);
     }
   };
@@ -454,7 +453,7 @@ const ReportComplaint = () => {
     
     try {
       if (!model) {
-        toast.error('AI model not loaded yet. Please wait...');
+        console.error('AI model not loaded yet. Please wait...');
         setIsProcessing(false);
         return;
       }
@@ -503,13 +502,13 @@ const ReportComplaint = () => {
         const description = template.replace('[ADDRESS]', address);
         setValue('description', description);
         
-        toast.success(`AI detected: ${category} (${(aiPrediction.probability * 100).toFixed(1)}% confidence)`);
+        console.log(`AI detected: ${category} (${(aiPrediction.probability * 100).toFixed(1)}% confidence)`);
       } else {
-        toast.warning('AI confidence too low. Please select category manually.');
+        console.warn('AI confidence too low. Please select category manually.');
       }
     } catch (error) {
       console.error('Error processing image:', error);
-      toast.error('Failed to process image with AI');
+      console.error('Failed to process image with AI');
     } finally {
       setIsProcessing(false);
     }
@@ -545,7 +544,7 @@ const ReportComplaint = () => {
       };
       
       console.log('Complaint submitted:', complaintData);
-      toast.success('Complaint submitted successfully!');
+      console.log('Complaint submitted successfully!');
       
       // Store complaint submission flag in localStorage to trigger progress bar
       const submissionTime = new Date().toISOString();
@@ -560,7 +559,7 @@ const ReportComplaint = () => {
       navigate('/citizen');
     } catch (error) {
       console.error('Error submitting complaint:', error);
-      toast.error('Failed to submit complaint');
+      console.error('Failed to submit complaint');
     }
   };
 
