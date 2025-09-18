@@ -47,11 +47,11 @@ const ComplaintTracking = () => {
       // Get the appropriate image based on complaint ID
       const getImageForComplaint = (complaintId) => {
         switch (complaintId) {
-          case '1': return '/pothole.jpg';
-          case '2': return '/streetlight.jpg';
-          case '3': return '/garbage.png';
-          case '4': return '/water.jpg';
-          default: return '/pothole.jpg';
+          case '1': return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg';
+          case '2': return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/streetlight.jpg';
+          case '3': return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png';
+          case '4': return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/water.jpg';
+          default: return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg';
         }
       };
 
