@@ -120,9 +120,10 @@ const LoginPage = () => {
                       message: 'Invalid email address',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-10 ${
+                  className={`input-field dark:input-field-dark pl-16 ${
                     errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
+                  style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your email"
                 />
               </div>
@@ -147,9 +148,10 @@ const LoginPage = () => {
                       message: 'Password must be at least 6 characters',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-10 pr-10 ${
+                  className={`input-field dark:input-field-dark pl-16 pr-10 ${
                     errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
+                  style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your password"
                 />
                 <button

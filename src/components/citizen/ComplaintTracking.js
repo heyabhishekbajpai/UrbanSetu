@@ -44,19 +44,103 @@ const ComplaintTracking = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Get the appropriate image based on complaint ID
+      const getImageForComplaint = (complaintId) => {
+        switch (complaintId) {
+          case '1': return '/pothole.jpg';
+          case '2': return '/streetlight.jpg';
+          case '3': return '/garbage.png';
+          case '4': return '/water.jpg';
+          default: return '/pothole.jpg';
+        }
+      };
+
+      // Get AI probability based on category
+      const getAIProbability = (category) => {
+        switch (category) {
+          case 'Pothole': return 0.87;
+          case 'StreetLight': return 0.92;
+          case 'Garbage': return 0.78;
+          case 'Water': return 0.95;
+          default: return 0.85;
+        }
+      };
+
+      // Get complaint details based on ID
+      const getComplaintDetails = (complaintId) => {
+        switch (complaintId) {
+          case '1':
+            return {
+              title: 'Pothole on Main Road',
+              description: 'Large pothole causing traffic issues and safety concerns for pedestrians and vehicles.',
+              category: 'Pothole',
+              department: 'Road Authority',
+              location: 'Main Road, Sector 15',
+              address: 'Main Road, Sector 15, Noida, Uttar Pradesh 201301',
+              status: 'resolved',
+              priority: 'high'
+            };
+          case '2':
+            return {
+              title: 'Broken Street Light',
+              description: 'Street light not working near park, causing safety issues for pedestrians.',
+              category: 'StreetLight',
+              department: 'Electrical Dept',
+              location: 'Park Road, Sector 12',
+              address: 'Park Road, Sector 12, Noida, Uttar Pradesh 201301',
+              status: 'in_progress',
+              priority: 'medium'
+            };
+          case '3':
+            return {
+              title: 'Garbage Accumulation',
+              description: 'Garbage not being collected regularly, causing health and hygiene issues.',
+              category: 'Garbage',
+              department: 'Sanitation Dept',
+              location: 'Residential Area, Sector 8',
+              address: 'Residential Area, Sector 8, Noida, Uttar Pradesh 201301',
+              status: 'pending',
+              priority: 'high'
+            };
+          case '4':
+            return {
+              title: 'Water Leakage',
+              description: 'Water pipe burst causing flooding in the area, immediate attention required.',
+              category: 'Water',
+              department: 'Water Board',
+              location: 'Near Community Center, Sector 5',
+              address: 'Near Community Center, Sector 5, Noida, Uttar Pradesh 201301',
+              status: 'registered',
+              priority: 'urgent'
+            };
+          default:
+            return {
+              title: 'Pothole on Main Road',
+              description: 'Large pothole causing traffic issues and safety concerns for pedestrians and vehicles.',
+              category: 'Pothole',
+              department: 'Road Authority',
+              location: 'Main Road, Sector 15',
+              address: 'Main Road, Sector 15, Noida, Uttar Pradesh 201301',
+              status: 'in_progress',
+              priority: 'high'
+            };
+        }
+      };
+
+      const complaintDetails = getComplaintDetails(id);
       const mockComplaint = {
         id: id,
-        title: 'Pothole on Main Road',
-        description: 'Large pothole causing traffic issues and safety concerns for pedestrians and vehicles.',
-        status: 'in_progress',
-        priority: 'high',
-        category: 'Pothole',
-        department: 'Road Authority',
-        location: 'Main Road, Sector 15, Noida',
-        address: 'Main Road, Sector 15, Noida, Uttar Pradesh 201301',
+        title: complaintDetails.title,
+        description: complaintDetails.description,
+        status: complaintDetails.status,
+        priority: complaintDetails.priority,
+        category: complaintDetails.category,
+        department: complaintDetails.department,
+        location: complaintDetails.location,
+        address: complaintDetails.address,
         latitude: 28.5355,
         longitude: 77.3910,
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
+        image: getImageForComplaint(id),
         createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
         updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
         estimatedResolution: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
@@ -72,53 +156,73 @@ const ComplaintTracking = () => {
           email: 'rajesh.kumar@noida.gov.in'
         },
         aiPrediction: {
-          className: 'Pothole',
-          probability: 0.87
+          className: complaintDetails.category,
+          probability: getAIProbability(complaintDetails.category)
         }
       };
 
-      const mockTimeline = [
-        {
-          id: '1',
-          status: 'registered',
-          title: 'Complaint Registered',
-          description: 'Your complaint has been successfully registered and assigned a tracking ID.',
-          timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          user: 'System',
-          icon: <CheckCircle className="w-5 h-5" />,
-          color: 'text-green-600 bg-green-100 dark:bg-green-900/30'
-        },
-        {
-          id: '2',
-          status: 'forwarded',
-          title: 'Forwarded to Department',
-          description: 'Complaint has been forwarded to Road Authority for review and action.',
-          timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-          user: 'System',
-          icon: <AlertCircle className="w-5 h-5" />,
-          color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30'
-        },
-        {
-          id: '3',
-          status: 'acknowledged',
-          title: 'Department Acknowledged',
-          description: 'Road Authority has acknowledged the complaint and assigned it to field team.',
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          user: 'Rajesh Kumar',
-          icon: <User className="w-5 h-5" />,
-          color: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30'
-        },
-        {
-          id: '4',
-          status: 'in_progress',
-          title: 'Work Started',
-          description: 'Field team has started working on the pothole repair. Materials have been arranged.',
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          user: 'Rajesh Kumar',
-          icon: <Clock className="w-5 h-5" />,
-          color: 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30'
+      // Create timeline based on complaint ID and status
+      const getTimelineForComplaint = (complaintId, status) => {
+        const baseTimeline = [
+          {
+            id: '1',
+            status: 'registered',
+            title: 'Complaint Registered',
+            description: 'Your complaint has been successfully registered and assigned a tracking ID.',
+            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+            user: 'System',
+            icon: <CheckCircle className="w-5 h-5" />,
+            color: 'text-green-600 bg-green-100 dark:bg-green-900/30'
+          }
+        ];
+
+        // Add timeline entries based on complaint status
+        if (status === 'registered') {
+          return baseTimeline;
+        } else if (status === 'in_progress') {
+          return [
+            ...baseTimeline,
+            {
+              id: '2',
+              status: 'forwarded',
+              title: 'Forwarded to Department',
+              description: 'Complaint has been forwarded to the relevant department for review and action.',
+              timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+              user: 'System',
+              icon: <AlertCircle className="w-5 h-5" />,
+              color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30'
+            }
+          ];
+        } else if (status === 'resolved') {
+          return [
+            ...baseTimeline,
+            {
+              id: '2',
+              status: 'forwarded',
+              title: 'Forwarded to Department',
+              description: 'Complaint has been forwarded to the relevant department for review and action.',
+              timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+              user: 'System',
+              icon: <AlertCircle className="w-5 h-5" />,
+              color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30'
+            },
+            {
+              id: '3',
+              status: 'resolved',
+              title: 'Issue Resolved',
+              description: 'The issue has been successfully resolved by the department.',
+              timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+              user: 'Rajesh Kumar',
+              icon: <CheckCircle className="w-5 h-5" />,
+              color: 'text-green-600 bg-green-100 dark:bg-green-900/30'
+            }
+          ];
+        } else {
+          return baseTimeline;
         }
-      ];
+      };
+
+      const mockTimeline = getTimelineForComplaint(id, complaintDetails.status);
 
       setComplaint(mockComplaint);
       setTimeline(mockTimeline);

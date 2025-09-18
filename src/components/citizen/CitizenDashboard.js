@@ -32,6 +32,13 @@ const CitizenDashboard = () => {
     pending: 0,
     inProgress: 0
   });
+  const [hasRecentSubmission, setHasRecentSubmission] = useState(false);
+  const [showProgressBar, setShowProgressBar] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Mock data - replace with actual API calls
   useEffect(() => {
@@ -47,7 +54,7 @@ const CitizenDashboard = () => {
         location: 'Main Road, Sector 15',
         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
         resolvedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop'
+        image: '/pothole.jpg'
       },
       {
         id: '2',
@@ -58,7 +65,7 @@ const CitizenDashboard = () => {
         category: 'StreetLight',
         location: 'Park Road, Sector 12',
         createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop'
+        image: '/streetlight.jpg'
       },
       {
         id: '3',
@@ -69,17 +76,68 @@ const CitizenDashboard = () => {
         category: 'Garbage',
         location: 'Residential Area, Sector 8',
         createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&fit=crop'
+        image: '/garbage.png'
+      },
+      {
+        id: '4',
+        title: 'Water Leakage',
+        description: 'Water pipe burst causing flooding in the area',
+        status: 'registered',
+        priority: 'urgent',
+        category: 'Water',
+        location: 'Near Community Center, Sector 5',
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        image: '/water.jpg'
       }
     ];
 
     setRecentComplaints(mockComplaints);
     setStats({
-      total: mockComplaints.length,
+      total: 5, // Changed from mockComplaints.length to 5
       resolved: mockComplaints.filter(c => c.status === 'resolved').length,
       pending: mockComplaints.filter(c => c.status === 'pending').length,
       inProgress: mockComplaints.filter(c => c.status === 'in_progress').length
     });
+
+    // Check if there's a recent complaint submission (within last 24 hours)
+    const now = new Date();
+    const recentSubmission = mockComplaints.find(complaint => {
+      const complaintTime = new Date(complaint.createdAt);
+      const hoursDiff = (now - complaintTime) / (1000 * 60 * 60);
+      return hoursDiff <= 24 && (complaint.status === 'registered' || complaint.status === 'pending');
+    });
+    
+    setHasRecentSubmission(!!recentSubmission);
+    
+    // Check if user just submitted a complaint (from localStorage)
+    const complaintSubmitted = localStorage.getItem('complaintSubmitted');
+    const complaintSubmittedTime = localStorage.getItem('complaintSubmittedTime');
+    
+    console.log('Checking localStorage:', { complaintSubmitted, complaintSubmittedTime });
+    
+    if (complaintSubmitted === 'true' && complaintSubmittedTime) {
+      const submissionTime = new Date(complaintSubmittedTime);
+      const timeDiff = (now - submissionTime) / (1000 * 60 * 60); // hours
+      
+      console.log('Complaint submission found:', { submissionTime, timeDiff });
+      
+      // Show progress bar if complaint was submitted within last 24 hours
+      if (timeDiff <= 24) {
+        console.log('Showing progress bar');
+        setShowProgressBar(true);
+        // Progress bar stays visible until page refresh or navigation
+      }
+      
+      // Clear the localStorage flag after a delay to ensure progress bar shows
+      setTimeout(() => {
+        localStorage.removeItem('complaintSubmitted');
+        localStorage.removeItem('complaintSubmittedTime');
+        console.log('Cleared localStorage flags');
+      }, 1000);
+    } else {
+      console.log('No recent complaint submission found');
+      setShowProgressBar(false);
+    }
   }, []);
 
   const getStatusColor = (status) => {
@@ -107,6 +165,26 @@ const CitizenDashboard = () => {
       case 'low': return 'text-green-600 bg-green-100 dark:bg-green-900/30';
       default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30';
     }
+  };
+
+  // Get progress height based on complaint status
+  const getProgressHeight = (status) => {
+    switch (status) {
+      case 'registered': return '25%';
+      case 'pending': return '50%';
+      case 'in_progress': return '75%';
+      case 'resolved': return '100%';
+      default: return '25%';
+    }
+  };
+
+  // Function to show progress bar after complaint submission
+  const handleComplaintSubmitted = () => {
+    setShowProgressBar(true);
+    // Hide progress bar after 10 seconds
+    setTimeout(() => {
+      setShowProgressBar(false);
+    }, 10000);
   };
 
   return (
@@ -212,6 +290,101 @@ const CitizenDashboard = () => {
           </div>
         </motion.div>
 
+
+        {/* Complaint Progress Bar - Only show after user submits a complaint */}
+        {showProgressBar && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+          <div className="card dark:card-dark">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+              Your Latest Complaint Progress
+            </h3>
+            
+            {/* Progress Steps */}
+            <div className="relative">
+              {/* Progress Steps */}
+              <div className="flex justify-between">
+                {/* Step 1: Complaint Registered */}
+                <div className="flex flex-col items-center relative z-10">
+                  <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-sm mb-2 shadow-lg">
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Complaint Registered</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Your complaint has been submitted</p>
+                  </div>
+                </div>
+
+                {/* Step 2: Forwarded to Department */}
+                <div className="flex flex-col items-center relative z-10">
+                  <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold text-sm mb-2 shadow-lg">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Forwarded to Department</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Your complaint is being reviewed</p>
+                  </div>
+                </div>
+
+                {/* Step 3: Worker Assigned */}
+                <div className="flex flex-col items-center relative z-10">
+                  <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 font-semibold text-sm mb-2 shadow-lg">
+                    <User className="w-6 h-6" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Worker Assigned</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">A worker will be assigned</p>
+                  </div>
+                </div>
+
+                {/* Step 4: Issue Resolved */}
+                <div className="flex flex-col items-center relative z-10">
+                  <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 font-semibold text-sm mb-2 shadow-lg">
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Issue Resolved</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Your complaint will be resolved</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Bold Progress Line - Below the icons */}
+              <div className="absolute top-6 h-2 bg-gray-200 dark:bg-gray-700 rounded-full" style={{ left: '48px', right: '48px' }}>
+                <div 
+                  className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-2000 ease-in-out shadow-lg"
+                  style={{ 
+                    width: '60%',
+                    animation: 'progressAnimation 2s ease-in-out'
+                  }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Progress Info */}
+            <div className="mt-6 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                    Current Status: Your complaint is being reviewed by the department
+                  </p>
+                  <p className="text-xs text-primary-600 dark:text-primary-400 mt-1">
+                    Expected next update within 24-48 hours
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          </motion.div>
+        )}
+
         {/* Recent Complaints */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -245,10 +418,22 @@ const CitizenDashboard = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="card dark:card-dark hover:shadow-lg transition-shadow cursor-pointer"
+                className="card dark:card-dark hover:shadow-lg transition-shadow cursor-pointer relative"
                 onClick={() => navigate(`/citizen/tracking/${complaint.id}`)}
               >
-                <div className="flex items-start space-x-4">
+                {/* Vertical Progress Bar */}
+                <div className="absolute left-4 top-4 bottom-4 w-1 bg-gray-200 dark:bg-gray-700 rounded-full">
+                  <div 
+                    className="w-full bg-gradient-to-b from-primary-500 to-primary-600 rounded-full transition-all duration-2000 ease-in-out shadow-lg"
+                    style={{ 
+                      height: getProgressHeight(complaint.status),
+                      animation: 'verticalProgressAnimation 2s ease-in-out',
+                      '--progress-height': getProgressHeight(complaint.status)
+                    }}
+                  ></div>
+                </div>
+                
+                <div className="flex items-start space-x-4 ml-6">
                   <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                     <img
                       src={complaint.image}

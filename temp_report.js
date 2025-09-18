@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -65,8 +65,6 @@ const ReportComplaint = () => {
   const [modelLoading, setModelLoading] = useState(true);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState(null);
-  const [aiModelLoaded, setAiModelLoaded] = useState(false);
-  const [locationLoaded, setLocationLoaded] = useState(false);
 
   const {
     register,
@@ -114,7 +112,7 @@ const ReportComplaint = () => {
         const model = await tmImage.load(AI_MODEL_URL + 'model.json', AI_MODEL_URL + 'metadata.json');
         setModel(model);
         setModelLoading(false);
-        setAiModelLoaded(true);
+        toast.success('AI model loaded successfully');
         console.log('Model loaded successfully:', model);
       } catch (error) {
         console.error('Error loading local AI model:', error);
@@ -125,7 +123,7 @@ const ReportComplaint = () => {
           const fallbackModel = await tmImage.load(FALLBACK_MODEL_URL + 'model.json', FALLBACK_MODEL_URL + 'metadata.json');
           setModel(fallbackModel);
           setModelLoading(false);
-          setAiModelLoaded(true);
+          toast.success('AI model loaded from online source');
           console.log('Fallback model loaded successfully:', fallbackModel);
         } catch (fallbackError) {
           console.error('Error loading fallback model:', fallbackError);
@@ -190,19 +188,14 @@ const ReportComplaint = () => {
       const services = [
         // OpenStreetMap Nominatim (free, good for detailed addresses)
         {
-          url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18&extratags=1&namedetails=1&accept-language=en`,
+          url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`,
           type: 'nominatim'
         },
         // BigDataCloud (backup)
         {
           url: `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
           type: 'bigdatacloud'
-        },
-        // Additional Nominatim request with different parameters for better results
-        {
-          url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18&extratags=1&namedetails=1&accept-language=en`,
-          type: 'nominatim_alt'
-        },
+        }
       ];
 
       for (const service of services) {
@@ -221,52 +214,17 @@ const ReportComplaint = () => {
               const addressParts = [];
               
               // Build detailed address from most specific to least specific
-              // Prioritize area/colony names and specific locations
               if (addr.house_number) addressParts.push(addr.house_number);
-              if (addr.road || addr.street) addressParts.push(addr.road || addr.street);
-              
-              // Prioritize area/colony names - these are most important for pinpoint location
-              if (addr.suburb) addressParts.push(addr.suburb);
-              if (addr.neighbourhood) addressParts.push(addr.neighbourhood);
-              if (addr.quarter) addressParts.push(addr.quarter);
-              if (addr.hamlet) addressParts.push(addr.hamlet);
-              if (addr.village) addressParts.push(addr.village);
-              if (addr.city_district) addressParts.push(addr.city_district);
-              if (addr.district) addressParts.push(addr.district);
-              if (addr.borough) addressParts.push(addr.borough);
-              
-              // Add city for context, but avoid duplicates
-              if (addr.city && !addressParts.includes(addr.city)) addressParts.push(addr.city);
-              if (addr.town && !addressParts.includes(addr.town)) addressParts.push(addr.town);
-              if (addr.municipality && !addressParts.includes(addr.municipality)) addressParts.push(addr.municipality);
-              
-              if (addr.county) addressParts.push(addr.county);
-              if (addr.state || addr.province) addressParts.push(addr.state || addr.province);
+              if (addr.road) addressParts.push(addr.road);
+              if (addr.suburb || addr.neighbourhood) addressParts.push(addr.suburb || addr.neighbourhood);
+              if (addr.city_district || addr.district) addressParts.push(addr.city_district || addr.district);
+              if (addr.city || addr.town || addr.village) addressParts.push(addr.city || addr.town || addr.village);
+              if (addr.state) addressParts.push(addr.state);
               if (addr.postcode) addressParts.push(addr.postcode);
-              // Don't add country to keep address shorter and more local
               
               const fullAddress = addressParts.join(', ');
-              if (fullAddress.length > 15) { // Ensure we got a meaningful address
+              if (fullAddress.length > 10) { // Ensure we got a meaningful address
                 return fullAddress;
-              }
-              
-              // If parsed address is too short, try using display_name
-              if (data.display_name && data.display_name.length > fullAddress.length) {
-                return data.display_name;
-              }
-              
-              // If we still don't have a good address, try to build one from available data
-              if (fullAddress.length < 10) {
-                const fallbackParts = [];
-                if (addr.road || addr.street) fallbackParts.push(addr.road || addr.street);
-                if (addr.suburb || addr.neighbourhood) fallbackParts.push(addr.suburb || addr.neighbourhood);
-                if (addr.city && !fallbackParts.includes(addr.city)) fallbackParts.push(addr.city);
-                if (addr.state && !fallbackParts.includes(addr.state)) fallbackParts.push(addr.state);
-                if (addr.postcode) fallbackParts.push(addr.postcode);
-                
-                if (fallbackParts.length > 0) {
-                  return fallbackParts.join(', ');
-                }
               }
             }
           } else if (service.type === 'bigdatacloud') {
@@ -274,53 +232,15 @@ const ReportComplaint = () => {
             if (data.localityInfo && data.localityInfo.administrative) {
               const addressParts = [];
               
-              // Try to get more detailed information from BigDataCloud
+              // Try to get more detailed information
               if (data.locality) addressParts.push(data.locality);
               if (data.principalSubdivision) addressParts.push(data.principalSubdivision);
               if (data.countryName) addressParts.push(data.countryName);
               
               const address = addressParts.join(', ');
-              if (address.length > 15) {
+              if (address.length > 10) {
                 return address;
               }
-            }
-            
-            // Also try the main data fields
-            if (data.locality || data.principalSubdivision || data.countryName) {
-              const addressParts = [];
-              if (data.locality) addressParts.push(data.locality);
-              if (data.principalSubdivision) addressParts.push(data.principalSubdivision);
-              if (data.countryName) addressParts.push(data.countryName);
-              
-              const address = addressParts.join(', ');
-              if (address.length > 15) {
-                return address;
-              }
-            }
-          } else if (service.type === 'nominatim_alt') {
-            // Alternative Nominatim response with different parameters
-            if (data.address) {
-              const addr = data.address;
-              const addressParts = [];
-              
-              // Try to get more specific information
-              if (addr.house_number) addressParts.push(addr.house_number);
-              if (addr.road || addr.street) addressParts.push(addr.road || addr.street);
-              if (addr.suburb || addr.neighbourhood) addressParts.push(addr.suburb || addr.neighbourhood);
-              if (addr.city_district || addr.district) addressParts.push(addr.city_district || addr.district);
-              if (addr.city || addr.town) addressParts.push(addr.city || addr.town);
-              if (addr.state) addressParts.push(addr.state);
-              if (addr.postcode) addressParts.push(addr.postcode);
-              
-              const fullAddress = addressParts.join(', ');
-              if (fullAddress.length > 15) {
-                return fullAddress;
-              }
-            }
-            
-            // Fallback to display_name if available
-            if (data.display_name) {
-              return data.display_name;
             }
           }
         } catch (serviceError) {
@@ -329,9 +249,8 @@ const ReportComplaint = () => {
         }
       }
       
-      // If all services fail, try to build a basic address from coordinates
-      // This is a fallback when no geocoding service works
-      return `GPS Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+      // If all services fail, return coordinates
+      return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
     } catch (error) {
       console.error('Reverse geocoding error:', error);
       return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
@@ -387,7 +306,7 @@ const ReportComplaint = () => {
           setValue('address', address);
           
           setIsLoadingLocation(false);
-          setLocationLoaded(true);
+          toast.success(`Location captured: ${address}`);
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -546,17 +465,6 @@ const ReportComplaint = () => {
       
       console.log('Complaint submitted:', complaintData);
       toast.success('Complaint submitted successfully!');
-      
-      // Store complaint submission flag in localStorage to trigger progress bar
-      const submissionTime = new Date().toISOString();
-      localStorage.setItem('complaintSubmitted', 'true');
-      localStorage.setItem('complaintSubmittedTime', submissionTime);
-      
-      console.log('Stored localStorage flags:', {
-        complaintSubmitted: localStorage.getItem('complaintSubmitted'),
-        complaintSubmittedTime: localStorage.getItem('complaintSubmittedTime')
-      });
-      
       navigate('/citizen');
     } catch (error) {
       console.error('Error submitting complaint:', error);
@@ -591,54 +499,11 @@ const ReportComplaint = () => {
             </div>
             
             <div className="flex items-center space-x-4">
-              {/* Loading Status Indicators */}
-              <div className="flex items-center space-x-2">
-                {/* AI Model Status */}
-                <div className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-dark-700 rounded-lg shadow-sm border border-gray-200 dark:border-dark-600">
-                  {modelLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Model</span>
-                    </>
-                  ) : aiModelLoaded ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-xs text-green-600 dark:text-green-400">AI Model</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">AI Model</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Location Status */}
-                <div className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-dark-700 rounded-lg shadow-sm border border-gray-200 dark:border-dark-600">
-                  {isLoadingLocation ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">Location</span>
-                    </>
-                  ) : locationLoaded ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-xs text-green-600 dark:text-green-400">Location</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Location</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
               >
-                {isDark ? '☀️' : '🌙'}
+                {isDark ? 'â˜€ï¸' : 'ðŸŒ™'}
               </button>
             </div>
           </div>
@@ -648,6 +513,14 @@ const ReportComplaint = () => {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Progress Bar */}
         <div className="mb-8">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Progress
+            </span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {Math.round((step / 3) * 100)}%
+            </span>
+          </div>
           <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-2">
             <div
               className="bg-primary-600 h-2 rounded-full transition-all duration-300"
@@ -930,12 +803,12 @@ const ReportComplaint = () => {
                     )}
                     {!recognition && (
                       <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
-                        ⚠️ Voice transcription not supported in this browser
+                        âš ï¸ Voice transcription not supported in this browser
                       </p>
                     )}
                     {recognition && (
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        🎤 Click the microphone to add voice description
+                        ðŸŽ¤ Click the microphone to add voice description
                       </p>
                     )}
                   </div>
@@ -1028,7 +901,7 @@ const ReportComplaint = () => {
                           </button>
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          💡 For best accuracy, include: House/Flat number, Street name, Area, City, and PIN code
+                          ðŸ’¡ For best accuracy, include: House/Flat number, Street name, Area, City, and PIN code
                         </p>
                       </div>
                     </div>
@@ -1051,7 +924,7 @@ const ReportComplaint = () => {
                         />
                       </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                        📍 Click on the map or drag the marker to set the exact location
+                        ðŸ“ Click on the map or drag the marker to set the exact location
                       </p>
                     </div>
                   </div>
@@ -1116,3 +989,4 @@ const ReportComplaint = () => {
 };
 
 export default ReportComplaint;
+

@@ -125,9 +125,10 @@ const RegisterPage = () => {
                       message: 'Name must be at least 2 characters',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-10 ${
+                  className={`input-field dark:input-field-dark pl-16 ${
                     errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
+                  style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your full name"
                 />
               </div>
@@ -152,9 +153,10 @@ const RegisterPage = () => {
                       message: 'Invalid email address',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-10 ${
+                  className={`input-field dark:input-field-dark pl-16 ${
                     errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
+                  style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your email"
                 />
               </div>
@@ -179,9 +181,10 @@ const RegisterPage = () => {
                       message: 'Please enter a valid 10-digit phone number',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-10 ${
+                  className={`input-field dark:input-field-dark pl-16 ${
                     errors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
+                  style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your phone number"
                 />
               </div>
@@ -202,9 +205,10 @@ const RegisterPage = () => {
                     {...register('department', {
                       required: userType === 'admin' ? 'Department is required' : false,
                     })}
-                    className={`input-field dark:input-field-dark pl-10 ${
+                    className={`input-field dark:input-field-dark pl-16 ${
                       errors.department ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                     }`}
+                    style={{ paddingLeft: '4rem' }}
                   >
                     <option value="">Select Department</option>
                     <option value="road-authority">Road Authority</option>
@@ -241,9 +245,10 @@ const RegisterPage = () => {
                       message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-10 pr-10 ${
+                  className={`input-field dark:input-field-dark pl-16 pr-10 ${
                     errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
+                  style={{ paddingLeft: '4rem' }}
                   placeholder="Create a password"
                 />
                 <button
@@ -273,9 +278,10 @@ const RegisterPage = () => {
                     validate: (value) =>
                       value === password || 'Passwords do not match',
                   })}
-                  className={`input-field dark:input-field-dark pl-10 pr-10 ${
+                  className={`input-field dark:input-field-dark pl-16 pr-10 ${
                     errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
                   }`}
+                  style={{ paddingLeft: '4rem' }}
                   placeholder="Confirm your password"
                 />
                 <button
