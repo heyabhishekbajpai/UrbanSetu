@@ -57,7 +57,7 @@ const AdminDashboard = () => {
           location: 'Main Road, Sector 15',
           reporter: 'Priya Sharma',
           createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop'
+          image: '/pothole.jpg'
         },
         {
           id: '2',
@@ -70,7 +70,7 @@ const AdminDashboard = () => {
           location: 'Park Road, Sector 12',
           reporter: 'Rajesh Kumar',
           createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop'
+          image: '/streetlight.jpg'
         },
         {
           id: '3',
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
           location: 'Residential Area, Sector 8',
           reporter: 'Anita Singh',
           createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400&h=300&fit=crop'
+          image: '/garbage.png'
         },
         {
           id: '4',
@@ -96,7 +96,7 @@ const AdminDashboard = () => {
           location: 'Market Area, Sector 5',
           reporter: 'Vikram Patel',
           createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          image: 'https://images.unsplash.com/photo-1581578731548-c6a0c3f2f6c5?w=400&h=300&fit=crop'
+          image: '/water.jpg'
         }
       ];
 
