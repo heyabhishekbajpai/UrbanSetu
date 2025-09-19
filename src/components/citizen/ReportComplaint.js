@@ -404,7 +404,11 @@ const ReportComplaint = () => {
   const captureImage = () => {
     setIsCapturing(true);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: true })
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment' // Use back camera on mobile
+        } 
+      })
         .then((stream) => {
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
