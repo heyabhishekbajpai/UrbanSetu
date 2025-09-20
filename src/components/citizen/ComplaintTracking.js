@@ -22,6 +22,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { format, formatDistanceToNow } from 'date-fns';
+import toast from 'react-hot-toast';
 
 const ComplaintTracking = () => {
   const { id } = useParams();

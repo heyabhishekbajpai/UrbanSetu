@@ -19,9 +19,42 @@ import {
   Download,
   Globe
 } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { format } from 'date-fns';
+
+// Create custom red markers
+const createRedIcon = () => {
+  return L.divIcon({
+    className: 'custom-red-marker',
+    html: `
+      <div style="
+        background-color: #dc2626;
+        width: 25px;
+        height: 25px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <div style="
+          transform: rotate(45deg);
+          color: white;
+          font-size: 12px;
+          font-weight: bold;
+        ">!</div>
+      </div>
+    `,
+    iconSize: [25, 25],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24]
+  });
+};
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -38,6 +71,42 @@ const AdminDashboard = () => {
   });
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Map data for Lucknow with 4 random pins
+  const mapPins = [
+    {
+      id: 1,
+      position: [26.8467, 80.9462], // Lucknow center
+      title: 'Pothole Complaint',
+      description: 'Large pothole on main road causing traffic issues',
+      status: 'pending',
+      priority: 'high'
+    },
+    {
+      id: 2,
+      position: [26.8523, 80.9345], // Gomti Nagar area
+      title: 'Street Light Issue',
+      description: 'Broken street light near park area',
+      status: 'in_progress',
+      priority: 'medium'
+    },
+    {
+      id: 3,
+      position: [26.8389, 80.9556], // Hazratganj area
+      title: 'Garbage Collection',
+      description: 'Garbage not being collected regularly',
+      status: 'resolved',
+      priority: 'high'
+    },
+    {
+      id: 4,
+      position: [26.8615, 80.9234], // Alambagh area
+      title: 'Sewage Overflow',
+      description: 'Sewage water overflowing on the street',
+      status: 'pending',
+      priority: 'urgent'
+    }
+  ];
 
   // Mock data - replace with actual API calls
   useEffect(() => {
@@ -254,28 +323,68 @@ const AdminDashboard = () => {
           </div>
         </motion.div>
 
-        {/* Map View Toggle */}
+        {/* Map Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-6"
+          className="mb-8"
         >
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Complaints Management
-            </h2>
-            <div className="flex items-center space-x-2">
-              <button className="btn-secondary flex items-center space-x-2">
-                <MapPin className="w-4 h-4" />
-                <span>Map View</span>
-              </button>
-              <button className="btn-secondary flex items-center space-x-2">
-                <Download className="w-4 h-4" />
-                <span>Export</span>
-              </button>
+          <div className="card dark:card-dark p-0 overflow-hidden">
+            <div className="p-6 border-b border-gray-200 dark:border-dark-700">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  Complaints Map - Lucknow
+                </h2>
+                <button className="btn-secondary flex items-center space-x-2">
+                  <Download className="w-4 h-4" />
+                  <span>Export</span>
+                </button>
+              </div>
+            </div>
+            <div className="h-96 w-full">
+              <MapContainer
+                center={[26.8467, 80.9462]} // Lucknow center
+                zoom={12}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                {mapPins.map((pin) => (
+                  <Marker key={pin.id} position={pin.position} icon={createRedIcon()}>
+                    <Popup>
+                      <div className="p-2">
+                        <h3 className="font-semibold text-gray-900 mb-1">{pin.title}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{pin.description}</p>
+                        <div className="flex items-center space-x-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(pin.status)}`}>
+                            {pin.status.replace('_', ' ').toUpperCase()}
+                          </span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(pin.priority)}`}>
+                            {pin.priority.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
             </div>
           </div>
+        </motion.div>
+
+        {/* Complaints Management Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-6"
+        >
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Complaints Management
+          </h2>
         </motion.div>
 
         {/* Filters and Search */}

@@ -34,6 +34,7 @@ const CitizenDashboard = () => {
   });
   const [hasRecentSubmission, setHasRecentSubmission] = useState(false);
   const [showProgressBar, setShowProgressBar] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -186,6 +187,15 @@ const CitizenDashboard = () => {
       setShowProgressBar(false);
     }, 10000);
   };
+
+  // Filter complaints based on search query
+  const filteredComplaints = recentComplaints.filter(complaint =>
+    complaint.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    complaint.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    complaint.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    complaint.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    complaint.status.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-dark-900">
@@ -392,27 +402,36 @@ const CitizenDashboard = () => {
           transition={{ delay: 0.1 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Recent Complaints
             </h2>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:flex-none">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search complaints..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 />
               </div>
-              <button className="p-2 border border-gray-300 dark:border-dark-600 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+              <button className="p-2 border border-gray-300 dark:border-dark-600 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex-shrink-0">
                 <Filter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               </button>
             </div>
           </div>
 
           <div className="space-y-4">
-            {recentComplaints.map((complaint, index) => (
+            {filteredComplaints.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {searchQuery ? 'No complaints found matching your search.' : 'No complaints available.'}
+                </p>
+              </div>
+            ) : (
+              filteredComplaints.map((complaint, index) => (
               <motion.div
                 key={complaint.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -443,78 +462,62 @@ const CitizenDashboard = () => {
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                          {complaint.title}
-                        </h3>
+                    <div className="space-y-3">
+                      <div className="w-full">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex-1">
+                            {complaint.title}
+                          </h3>
+                          <button className="p-1 hover:bg-gray-100 dark:hover:bg-dark-700 rounded flex-shrink-0">
+                            <MoreVertical className="w-4 h-4 text-gray-400" />
+                          </button>
+                        </div>
                         <p className="text-gray-600 dark:text-gray-400 text-sm mb-2 line-clamp-2">
                           {complaint.description}
                         </p>
-                        <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                          <MapPin className="w-4 h-4" />
-                          <span>{complaint.location}</span>
-                        </div>
                       </div>
                       
-                      <div className="flex flex-col items-end space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(complaint.status)}`}>
-                            <span className="flex items-center space-x-1">
-                              {getStatusIcon(complaint.status)}
-                              <span className="capitalize">{complaint.status.replace('_', ' ')}</span>
-                            </span>
+                      <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                        <span>{complaint.location}</span>
+                      </div>
+                      
+                      {/* Status and Priority Badges - moved below content */}
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(complaint.status)}`}>
+                          <span className="flex items-center space-x-1">
+                            {getStatusIcon(complaint.status)}
+                            <span className="capitalize">{complaint.status.replace('_', ' ')}</span>
                           </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(complaint.priority)}`}>
-                            {complaint.priority}
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {format(complaint.createdAt, 'MMM dd, yyyy')}
-                        </div>
+                        </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getPriorityColor(complaint.priority)}`}>
+                          {complaint.priority}
+                        </span>
+                      </div>
+                      
+                      {/* Date - moved below badges */}
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        {format(complaint.createdAt, 'MMM dd, yyyy')}
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between mt-4">
-                      <div className="flex items-center space-x-4">
-                        <button className="flex items-center space-x-1 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                          <Eye className="w-4 h-4" />
-                          <span>View Details</span>
-                        </button>
-                        <button className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                          <MessageSquare className="w-4 h-4" />
-                          <span>Add Comment</span>
-                        </button>
-                      </div>
-                      <button className="p-1 hover:bg-gray-100 dark:hover:bg-dark-700 rounded">
-                        <MoreVertical className="w-4 h-4 text-gray-400" />
+                    <div className="flex items-center justify-center sm:justify-end gap-6 mt-4 px-2">
+                      <button className="flex items-center space-x-1 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 whitespace-nowrap">
+                        <Eye className="w-4 h-4 flex-shrink-0" />
+                        <span>View Details</span>
+                      </button>
+                      <button className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap">
+                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
+                        <span>Add Comment</span>
                       </button>
                     </div>
                   </div>
                 </div>
               </motion.div>
-            ))}
+            ))
+            )}
           </div>
 
-          {recentComplaints.length === 0 && (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-gray-100 dark:bg-dark-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Camera className="w-12 h-12 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No complaints yet
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Start by reporting your first civic issue
-              </p>
-              <Link
-                to="/citizen/report"
-                className="btn-primary"
-              >
-                Report an Issue
-              </Link>
-            </div>
-          )}
         </motion.div>
 
         {/* Quick Tips */}

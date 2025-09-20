@@ -53,8 +53,8 @@ const LandingPage = () => {
 
   const testimonials = [
     {
-      name: "Priya Sharma",
-      role: "Resident, Mumbai",
+      name: "Subhanshi Mishra",
+      role: "PHD Scholar, Bangalore",
       content: "UrbanSetu made it so easy to report the pothole near my house. It was fixed within 3 days!",
       rating: 5
     },
@@ -491,18 +491,18 @@ const LandingPage = () => {
               <ul className="space-y-2 text-gray-400">
                 <li className="flex items-center">
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  support@urbansetu.com
+                  bajpai.connect@gmail.com
                 </li>
                 <li className="flex items-center">
                   <Heart className="w-4 h-4 mr-2" />
-                  Made with ❤️ for India
+                  Made with ❤️ for India by team NovaX
                 </li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 UrbanSetu. All rights reserved. Building better cities, one report at a time.</p>
+            <p>&copy; 2025 Urbansetu. All rights reserved. Building better cities, one report at a time.</p>
           </div>
         </div>
       </footer>

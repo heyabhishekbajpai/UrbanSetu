@@ -576,86 +576,86 @@ const ReportComplaint = () => {
       <header className="bg-white dark:bg-dark-800 shadow-sm border-b border-gray-200 dark:border-dark-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
               <button
                 onClick={() => navigate('/citizen')}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white truncate">
                   Report Issue
                 </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 truncate">
                   Step {step} of 3
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              {/* Loading Status Indicators */}
-              <div className="flex items-center space-x-2">
-                {/* AI Model Status */}
-                <div className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-dark-700 rounded-lg shadow-sm border border-gray-200 dark:border-dark-600">
-                  {modelLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">AI Model</span>
-                    </>
-                  ) : aiModelLoaded ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-xs text-green-600 dark:text-green-400">AI Model</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">AI Model</span>
-                    </>
-                  )}
-                </div>
-
-                {/* Location Status */}
-                <div className="flex items-center space-x-2 px-3 py-2 bg-white dark:bg-dark-700 rounded-lg shadow-sm border border-gray-200 dark:border-dark-600">
-                  {isLoadingLocation ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">Location</span>
-                    </>
-                  ) : locationLoaded ? (
-                    <>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-xs text-green-600 dark:text-green-400">Location</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">Location</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
-              >
-                {isDark ? '☀️' : '🌙'}
-              </button>
-            </div>
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors flex-shrink-0"
+            >
+              {isDark ? '☀️' : '🌙'}
+            </button>
           </div>
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Progress Bar */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-2">
             <div
               className="bg-primary-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${(step / 3) * 100}%` }}
             />
+          </div>
+        </div>
+
+        {/* Status Indicators */}
+        <div className="mb-8">
+          <div className="flex items-center justify-center space-x-4">
+            {/* AI Model Status */}
+            <div className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-dark-700 rounded-lg shadow-sm border border-gray-200 dark:border-dark-600">
+              {modelLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">AI Model</span>
+                </>
+              ) : aiModelLoaded ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span className="text-sm text-green-600 dark:text-green-400">AI Model</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">AI Model</span>
+                </>
+              )}
+            </div>
+
+            {/* Location Status */}
+            <div className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-dark-700 rounded-lg shadow-sm border border-gray-200 dark:border-dark-600">
+              {isLoadingLocation ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Location</span>
+                </>
+              ) : locationLoaded ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <span className="text-sm text-green-600 dark:text-green-400">Location</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Location</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 

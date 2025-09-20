@@ -196,7 +196,7 @@ const ProfilePage = () => {
                     Full Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <input
                       type="text"
                       name="name"
@@ -206,6 +206,7 @@ const ProfilePage = () => {
                       className={`input-field dark:input-field-dark pl-10 ${
                         !isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
                       }`}
+                      style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
                 </div>
@@ -216,7 +217,7 @@ const ProfilePage = () => {
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <input
                       type="email"
                       name="email"
@@ -226,6 +227,7 @@ const ProfilePage = () => {
                       className={`input-field dark:input-field-dark pl-10 ${
                         !isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
                       }`}
+                      style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
                 </div>
@@ -236,7 +238,7 @@ const ProfilePage = () => {
                     Phone Number
                   </label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <input
                       type="tel"
                       name="phone"
@@ -246,6 +248,7 @@ const ProfilePage = () => {
                       className={`input-field dark:input-field-dark pl-10 ${
                         !isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
                       }`}
+                      style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
                 </div>
@@ -256,7 +259,7 @@ const ProfilePage = () => {
                     Address
                   </label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                    <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <textarea
                       name="address"
                       value={formData.address}
@@ -266,6 +269,7 @@ const ProfilePage = () => {
                       className={`input-field dark:input-field-dark pl-10 ${
                         !isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
                       }`}
+                      style={{ paddingLeft: '2.75rem' }}
                       placeholder="Enter your address"
                     />
                   </div>
@@ -277,12 +281,13 @@ const ProfilePage = () => {
                     Account Type
                   </label>
                   <div className="relative">
-                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <input
                       type="text"
                       value={user?.userType === 'admin' ? 'Administrator' : 'Citizen'}
                       disabled
                       className="input-field dark:input-field-dark pl-10 bg-gray-50 dark:bg-dark-700 cursor-not-allowed"
+                      style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
                 </div>
@@ -297,7 +302,7 @@ const ProfilePage = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <Bell className="w-5 h-5 text-gray-400" />
+                    <Bell className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">Email Notifications</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -313,7 +318,7 @@ const ProfilePage = () => {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <Globe className="w-5 h-5 text-gray-400" />
+                    <Globe className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">Dark Mode</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
