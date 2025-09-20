@@ -501,14 +501,16 @@ const CitizenDashboard = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-center sm:justify-end gap-6 mt-4 px-2">
-                      <button className="flex items-center space-x-1 text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 whitespace-nowrap">
-                        <Eye className="w-4 h-4 flex-shrink-0" />
-                        <span>View Details</span>
+                    <div className="flex items-center justify-between mt-4 px-2">
+                      <button className="flex items-center space-x-1 text-xs sm:text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                        <Eye className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="hidden sm:inline">View Details</span>
+                        <span className="sm:hidden">View</span>
                       </button>
-                      <button className="flex items-center space-x-1 text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 whitespace-nowrap">
-                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                        <span>Add Comment</span>
+                      <button className="flex items-center space-x-1 text-xs sm:text-sm text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                        <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span className="hidden sm:inline">Add Comment</span>
+                        <span className="sm:hidden">Comment</span>
                       </button>
                     </div>
                   </div>
