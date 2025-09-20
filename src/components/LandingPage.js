@@ -96,8 +96,11 @@ const LandingPage = () => {
               >
                 {isDark ? '☀️' : '🌙'}
               </button>
-              <Link to="/login" className="btn-primary">
-                Get Started
+              <Link to="/login" className="btn-primary px-2 sm:px-6 py-2 text-xs sm:text-base">
+                <span className="sm:whitespace-nowrap">
+                  <span className="block sm:inline">Get</span>
+                  <span className="block sm:inline sm:ml-1">Started</span>
+                </span>
               </Link>
             </div>
           </div>
