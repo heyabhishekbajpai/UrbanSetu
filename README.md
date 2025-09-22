@@ -93,17 +93,6 @@ A modern, AI-powered civic issue reporting and resolution platform designed for 
    npm install
    ```
 
-3. **Set up Google Maps API (Optional)**
-   - Get a free API key from [Google Cloud Console](https://console.cloud.google.com/google/maps-apis)
-   - Enable the following APIs:
-     - Maps JavaScript API
-     - Geocoding API
-   - Create a `.env` file in the root directory:
-     ```bash
-     REACT_APP_GOOGLE_MAPS_API_KEY=your_api_key_here
-     ```
-   - **Note**: Without an API key, the map will show a placeholder with setup instructions. The app works fully without the map feature.
-
 4. **Start development server**
    ```bash
    npm start
