@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { supabase } from '../../supabaseClient';
 import { format } from 'date-fns';
 
 const CitizenDashboard = () => {
@@ -41,105 +42,124 @@ const CitizenDashboard = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Mock data - replace with actual API calls
+  const [isShowingMockData, setIsShowingMockData] = useState(false);
+
+  // Fetch data from Supabase
   useEffect(() => {
-    // Simulate loading complaints
-    const mockComplaints = [
-      {
-        id: '1',
-        title: 'Pothole on Main Road',
-        description: 'Large pothole causing traffic issues',
-        status: 'resolved',
-        priority: 'high',
-        category: 'Pothole',
-        location: 'Main Road, Sector 15',
-        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        resolvedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg'
-      },
-      {
-        id: '2',
-        title: 'Broken Street Light',
-        description: 'Street light not working near park',
-        status: 'in_progress',
-        priority: 'medium',
-        category: 'StreetLight',
-        location: 'Park Road, Sector 12',
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/streetlight.jpg'
-      },
-      {
-        id: '3',
-        title: 'Garbage Accumulation',
-        description: 'Garbage not being collected regularly',
-        status: 'pending',
-        priority: 'high',
-        category: 'Garbage',
-        location: 'Residential Area, Sector 8',
-        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png'
-      },
-      {
-        id: '4',
-        title: 'Water Leakage',
-        description: 'Water pipe burst causing flooding in the area',
-        status: 'registered',
-        priority: 'urgent',
-        category: 'Water',
-        location: 'Near Community Center, Sector 5',
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-        image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/water.jpg'
+    const loadData = async () => {
+      if (!user) return;
+
+      try {
+        const { data: complaintsData, error } = await supabase
+          .from('complaints')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (complaintsData && complaintsData.length > 0) {
+          const formattedComplaints = complaintsData.map(c => ({
+            id: c.id,
+            title: `${c.category} at ${c.address ? c.address.split(',')[0] : 'Unknown Location'}`,
+            description: c.description,
+            status: c.status,
+            priority: c.priority,
+            category: c.category,
+            location: c.address || 'No address provided',
+            createdAt: new Date(c.created_at),
+            image: c.image_url || 'https://via.placeholder.com/150',
+            resolvedAt: c.status === 'resolved' ? new Date(c.updated_at) : null
+          }));
+
+          setRecentComplaints(formattedComplaints);
+          setIsShowingMockData(false);
+
+          setStats({
+            total: formattedComplaints.length,
+            resolved: formattedComplaints.filter(c => c.status === 'resolved').length,
+            pending: formattedComplaints.filter(c => c.status === 'pending').length,
+            inProgress: formattedComplaints.filter(c => c.status === 'in-progress').length
+          });
+
+          // Check for recent submission logic (only for real data)
+          const now = new Date();
+          const recentSubmission = formattedComplaints.find(complaint => {
+            const complaintTime = new Date(complaint.createdAt);
+            const hoursDiff = (now - complaintTime) / (1000 * 60 * 60);
+            return hoursDiff <= 24 && (complaint.status === 'pending');
+          });
+          setHasRecentSubmission(!!recentSubmission);
+
+        } else {
+          // Use Mock Data if no real data exists
+          const mockComplaints = [
+            {
+              id: 'mock-1',
+              title: 'Garbage Accumulation',
+              description: 'Garbage not being collected regularly',
+              status: 'pending',
+              priority: 'high',
+              category: 'Garbage',
+              location: 'Residential Area, Sector 8',
+              createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+              image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png'
+            },
+            {
+              id: 'mock-2',
+              title: 'Pothole on Main Road',
+              description: 'Large pothole causing traffic issues',
+              status: 'resolved',
+              priority: 'high',
+              category: 'Pothole',
+              location: 'Main Road, Sector 15',
+              createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+              resolvedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+              image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg'
+            }
+          ];
+
+          setRecentComplaints(mockComplaints);
+          setIsShowingMockData(true);
+          setHasRecentSubmission(false); // Don't trigger "recent submission" logic for mock data
+
+          setStats({
+            total: mockComplaints.length,
+            resolved: mockComplaints.filter(c => c.status === 'resolved').length,
+            pending: mockComplaints.filter(c => c.status === 'pending').length,
+            inProgress: mockComplaints.filter(c => c.status === 'in_progress').length
+          });
+        }
+
+        // Check if user just submitted a complaint (from localStorage) - this runs regardless of data source
+        // to ensure the progress bar shows up immediately after submission even if DB fetch is slow/empty initially
+        const complaintSubmitted = localStorage.getItem('complaintSubmitted');
+        const complaintSubmittedTime = localStorage.getItem('complaintSubmittedTime');
+
+        if (complaintSubmitted === 'true' && complaintSubmittedTime) {
+          const now = new Date();
+          const submissionTime = new Date(complaintSubmittedTime);
+          const timeDiff = (now - submissionTime) / (1000 * 60 * 60); // hours
+
+          if (timeDiff <= 24) {
+            setShowProgressBar(true);
+          }
+
+          setTimeout(() => {
+            localStorage.removeItem('complaintSubmitted');
+            localStorage.removeItem('complaintSubmittedTime');
+          }, 1000);
+        } else {
+          setShowProgressBar(false);
+        }
+
+      } catch (error) {
+        console.error('Error fetching complaints:', error);
       }
-    ];
+    };
 
-    setRecentComplaints(mockComplaints);
-    setStats({
-      total: 5, // Changed from mockComplaints.length to 5
-      resolved: mockComplaints.filter(c => c.status === 'resolved').length,
-      pending: mockComplaints.filter(c => c.status === 'pending').length,
-      inProgress: mockComplaints.filter(c => c.status === 'in_progress').length
-    });
-
-    // Check if there's a recent complaint submission (within last 24 hours)
-    const now = new Date();
-    const recentSubmission = mockComplaints.find(complaint => {
-      const complaintTime = new Date(complaint.createdAt);
-      const hoursDiff = (now - complaintTime) / (1000 * 60 * 60);
-      return hoursDiff <= 24 && (complaint.status === 'registered' || complaint.status === 'pending');
-    });
-
-    setHasRecentSubmission(!!recentSubmission);
-
-    // Check if user just submitted a complaint (from localStorage)
-    const complaintSubmitted = localStorage.getItem('complaintSubmitted');
-    const complaintSubmittedTime = localStorage.getItem('complaintSubmittedTime');
-
-    console.log('Checking localStorage:', { complaintSubmitted, complaintSubmittedTime });
-
-    if (complaintSubmitted === 'true' && complaintSubmittedTime) {
-      const submissionTime = new Date(complaintSubmittedTime);
-      const timeDiff = (now - submissionTime) / (1000 * 60 * 60); // hours
-
-      console.log('Complaint submission found:', { submissionTime, timeDiff });
-
-      // Show progress bar if complaint was submitted within last 24 hours
-      if (timeDiff <= 24) {
-        console.log('Showing progress bar');
-        setShowProgressBar(true);
-        // Progress bar stays visible until page refresh or navigation
-      }
-
-      // Clear the localStorage flag after a delay to ensure progress bar shows
-      setTimeout(() => {
-        localStorage.removeItem('complaintSubmitted');
-        localStorage.removeItem('complaintSubmittedTime');
-        console.log('Cleared localStorage flags');
-      }, 1000);
-    } else {
-      console.log('No recent complaint submission found');
-      setShowProgressBar(false);
-    }
-  }, []);
+    loadData();
+  }, [user]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -403,9 +423,19 @@ const CitizenDashboard = () => {
           className="mb-8"
         >
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Recent Complaints
-            </h2>
+            <div className="flex flex-col gap-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Recent Complaints
+              </h2>
+              {isShowingMockData && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center space-x-2">
+                  <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    Currently showing demo data. Your registered complaints will appear here automatically.
+                  </p>
+                </div>
+              )}
+            </div>
             <div className="flex items-center space-x-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:flex-none">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />

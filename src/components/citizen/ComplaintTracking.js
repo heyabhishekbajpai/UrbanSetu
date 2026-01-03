@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Clock, 
-  CheckCircle, 
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  CheckCircle,
   AlertCircle,
   User,
   MessageSquare,
@@ -23,13 +23,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { format, formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
+import { supabase } from '../../supabaseClient';
 
 const ComplaintTracking = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  
+
   const [complaint, setComplaint] = useState(null);
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,200 +38,159 @@ const ComplaintTracking = () => {
   const [rating, setRating] = useState(0);
   const [showRating, setShowRating] = useState(false);
 
-  // Mock data - replace with actual API calls
+  // Fetch complaint data
   useEffect(() => {
     const loadComplaint = async () => {
       setLoading(true);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Get the appropriate image based on complaint ID
-      const getImageForComplaint = (complaintId) => {
-        switch (complaintId) {
-          case '1': return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg';
-          case '2': return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/streetlight.jpg';
-          case '3': return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png';
-          case '4': return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/water.jpg';
-          default: return 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg';
-        }
-      };
 
-      // Get AI probability based on category
-      const getAIProbability = (category) => {
-        switch (category) {
-          case 'Pothole': return 0.87;
-          case 'StreetLight': return 0.92;
-          case 'Garbage': return 0.78;
-          case 'Water': return 0.95;
-          default: return 0.85;
-        }
-      };
+      try {
+        let complaintData = null;
 
-      // Get complaint details based on ID
-      const getComplaintDetails = (complaintId) => {
-        switch (complaintId) {
-          case '1':
-            return {
-              title: 'Pothole on Main Road',
-              description: 'Large pothole causing traffic issues and safety concerns for pedestrians and vehicles.',
-              category: 'Pothole',
-              department: 'Road Authority',
-              location: 'Main Road, Sector 15',
-              address: 'Main Road, Sector 15, Noida, Uttar Pradesh 201301',
-              status: 'resolved',
-              priority: 'high'
-            };
-          case '2':
-            return {
-              title: 'Broken Street Light',
-              description: 'Street light not working near park, causing safety issues for pedestrians.',
-              category: 'StreetLight',
-              department: 'Electrical Dept',
-              location: 'Park Road, Sector 12',
-              address: 'Park Road, Sector 12, Noida, Uttar Pradesh 201301',
-              status: 'in_progress',
-              priority: 'medium'
-            };
-          case '3':
-            return {
-              title: 'Garbage Accumulation',
-              description: 'Garbage not being collected regularly, causing health and hygiene issues.',
-              category: 'Garbage',
-              department: 'Sanitation Dept',
-              location: 'Residential Area, Sector 8',
-              address: 'Residential Area, Sector 8, Noida, Uttar Pradesh 201301',
-              status: 'pending',
-              priority: 'high'
-            };
-          case '4':
-            return {
-              title: 'Water Leakage',
-              description: 'Water pipe burst causing flooding in the area, immediate attention required.',
-              category: 'Water',
-              department: 'Water Board',
-              location: 'Near Community Center, Sector 5',
-              address: 'Near Community Center, Sector 5, Noida, Uttar Pradesh 201301',
-              status: 'registered',
-              priority: 'urgent'
-            };
-          default:
-            return {
-              title: 'Pothole on Main Road',
-              description: 'Large pothole causing traffic issues and safety concerns for pedestrians and vehicles.',
-              category: 'Pothole',
-              department: 'Road Authority',
-              location: 'Main Road, Sector 15',
-              address: 'Main Road, Sector 15, Noida, Uttar Pradesh 201301',
-              status: 'in_progress',
-              priority: 'high'
-            };
-        }
-      };
-
-      const complaintDetails = getComplaintDetails(id);
-      const mockComplaint = {
-        id: id,
-        title: complaintDetails.title,
-        description: complaintDetails.description,
-        status: complaintDetails.status,
-        priority: complaintDetails.priority,
-        category: complaintDetails.category,
-        department: complaintDetails.department,
-        location: complaintDetails.location,
-        address: complaintDetails.address,
-        latitude: 28.5355,
-        longitude: 77.3910,
-        image: getImageForComplaint(id),
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        estimatedResolution: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-        reporter: {
-          name: user?.name || 'John Doe',
-          email: user?.email || 'john@example.com',
-          phone: '+91 98765 43210'
-        },
-        assignedTo: {
-          name: 'Rajesh Kumar',
-          department: 'Road Authority',
-          phone: '+91 98765 12345',
-          email: 'rajesh.kumar@noida.gov.in'
-        },
-        aiPrediction: {
-          className: complaintDetails.category,
-          probability: getAIProbability(complaintDetails.category)
-        }
-      };
-
-      // Create timeline based on complaint ID and status
-      const getTimelineForComplaint = (complaintId, status) => {
-        const baseTimeline = [
-          {
-            id: '1',
-            status: 'registered',
-            title: 'Complaint Registered',
-            description: 'Your complaint has been successfully registered and assigned a tracking ID.',
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-            user: 'System',
-            icon: <CheckCircle className="w-5 h-5" />,
-            color: 'text-green-600 bg-green-100 dark:bg-green-900/30'
-          }
-        ];
-
-        // Add timeline entries based on complaint status
-        if (status === 'registered') {
-          return baseTimeline;
-        } else if (status === 'in_progress') {
-          return [
-            ...baseTimeline,
-            {
-              id: '2',
-              status: 'forwarded',
-              title: 'Forwarded to Department',
-              description: 'Complaint has been forwarded to the relevant department for review and action.',
-              timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-              user: 'System',
-              icon: <AlertCircle className="w-5 h-5" />,
-              color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30'
+        // Check if it's a mock ID
+        if (id.startsWith('mock-')) {
+          // Mock Data Logic
+          const getMockDetails = (mockId) => {
+            if (mockId === 'mock-1') {
+              return {
+                title: 'Garbage Accumulation',
+                description: 'Garbage not being collected regularly, causing health and hygiene issues.',
+                category: 'Garbage',
+                department: 'Sanitation Department',
+                location: 'Residential Area, Sector 8',
+                address: 'Residential Area, Sector 8, Lucknow, Uttar Pradesh',
+                status: 'pending',
+                priority: 'high',
+                image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png',
+                createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+                updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
+              };
+            } else {
+              return {
+                title: 'Pothole on Main Road',
+                description: 'Large pothole causing traffic issues and safety concerns for pedestrians and vehicles.',
+                category: 'Pothole',
+                department: 'Road Authority',
+                location: 'Main Road, Sector 15',
+                address: 'Main Road, Sector 15, Lucknow, Uttar Pradesh',
+                status: 'resolved',
+                priority: 'high',
+                image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg',
+                createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+                updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
+              };
             }
-          ];
-        } else if (status === 'resolved') {
-          return [
-            ...baseTimeline,
-            {
-              id: '2',
-              status: 'forwarded',
-              title: 'Forwarded to Department',
-              description: 'Complaint has been forwarded to the relevant department for review and action.',
-              timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-              user: 'System',
-              icon: <AlertCircle className="w-5 h-5" />,
-              color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30'
+          };
+
+          const details = getMockDetails(id);
+          complaintData = {
+            id: id,
+            ...details,
+            aiPrediction: {
+              className: details.category,
+              probability: 0.85
             },
+            assignedTo: {
+              name: 'Rajesh Kumar',
+              department: details.department,
+              phone: '+91 98765 12345',
+              email: 'rajesh.kumar@urbansetu.gov.in'
+            }
+          };
+
+        } else {
+          // Real Supabase Data Logic
+          const { data, error } = await supabase
+            .from('complaints')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (error) throw error;
+
+          if (data) {
+            complaintData = {
+              id: data.id,
+              title: `${data.category} at ${data.address ? data.address.split(',')[0] : 'Location'}`,
+              description: data.description,
+              category: data.category,
+              department: data.department,
+              location: data.address || 'No address provided',
+              address: data.address || 'No address provided',
+              status: data.status,
+              priority: data.priority,
+              image: data.image_url || 'https://via.placeholder.com/400x300?text=No+Image',
+              createdAt: new Date(data.created_at),
+              updatedAt: data.updated_at ? new Date(data.updated_at) : null,
+              aiPrediction: data.ai_prediction,
+              assignedTo: {
+                name: 'Pending Assignment',
+                department: data.department,
+                phone: 'N/A',
+                email: 'support@urbansetu.gov.in'
+              }
+            };
+          }
+        }
+
+        if (complaintData) {
+          setComplaint(complaintData);
+
+          // Generate Timeline
+          const baseTimeline = [
             {
-              id: '3',
-              status: 'resolved',
-              title: 'Issue Resolved',
-              description: 'The issue has been successfully resolved by the department.',
-              timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-              user: 'Rajesh Kumar',
+              id: '1',
+              status: 'registered',
+              title: 'Complaint Registered',
+              description: 'Your complaint has been successfully registered.',
+              timestamp: new Date(complaintData.createdAt),
+              user: 'System',
               icon: <CheckCircle className="w-5 h-5" />,
               color: 'text-green-600 bg-green-100 dark:bg-green-900/30'
             }
           ];
-        } else {
-          return baseTimeline;
+
+          let generatedTimeline = [...baseTimeline];
+
+          if (complaintData.status === 'in_progress' || complaintData.status === 'resolved') {
+            generatedTimeline.push({
+              id: '2',
+              status: 'forwarded',
+              title: 'Forwarded to Department',
+              description: `Complaint forwarded to ${complaintData.department}.`,
+              timestamp: new Date(new Date(complaintData.createdAt).getTime() + 3600000), // +1 hour
+              user: 'System',
+              icon: <AlertCircle className="w-5 h-5" />,
+              color: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30'
+            });
+          }
+
+          if (complaintData.status === 'resolved') {
+            generatedTimeline.push({
+              id: '3',
+              status: 'resolved',
+              title: 'Issue Resolved',
+              description: 'The issue has been marked as resolved.',
+              timestamp: new Date(complaintData.updatedAt),
+              user: 'Department Officer',
+              icon: <CheckCircle className="w-5 h-5" />,
+              color: 'text-green-600 bg-green-100 dark:bg-green-900/30'
+            });
+          }
+
+          setTimeline(generatedTimeline);
         }
-      };
 
-      const mockTimeline = getTimelineForComplaint(id, complaintDetails.status);
-
-      setComplaint(mockComplaint);
-      setTimeline(mockTimeline);
-      setLoading(false);
+      } catch (error) {
+        console.error('Error loading complaint:', error);
+        toast.error('Failed to load complaint details');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    loadComplaint();
+    if (id) {
+      loadComplaint();
+    }
   }, [id, user]);
 
   const getStatusColor = (status) => {
@@ -261,7 +221,7 @@ const ComplaintTracking = () => {
         timestamp: new Date(),
         user: user?.name || 'You'
       };
-      
+
       // Add to timeline
       setTimeline(prev => [...prev, {
         id: comment.id,
@@ -273,7 +233,7 @@ const ComplaintTracking = () => {
         icon: <MessageSquare className="w-5 h-5" />,
         color: 'text-gray-600 bg-gray-100 dark:bg-gray-900/30'
       }]);
-      
+
       setNewComment('');
       toast.success('Comment added successfully');
     }
@@ -340,7 +300,7 @@ const ComplaintTracking = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <button
                 onClick={toggleTheme}
@@ -396,7 +356,7 @@ const ComplaintTracking = () => {
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                 {complaint.description}
               </p>
-              
+
               {complaint.aiPrediction && (
                 <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="flex items-center space-x-2">
@@ -404,7 +364,7 @@ const ComplaintTracking = () => {
                       <span className="text-blue-600 text-xs font-bold">AI</span>
                     </div>
                     <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                      AI Detection: {complaint.aiPrediction.className} 
+                      AI Detection: {complaint.aiPrediction.className}
                       {' '}({Math.round(complaint.aiPrediction.probability * 100)}% confidence)
                     </span>
                   </div>
@@ -422,7 +382,7 @@ const ComplaintTracking = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Progress Timeline
               </h3>
-              
+
               <div className="space-y-4">
                 {timeline.map((item, index) => (
                   <div key={item.id} className="flex items-start space-x-4">
@@ -490,7 +450,7 @@ const ComplaintTracking = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Status Overview
               </h3>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Status:</span>
@@ -643,11 +603,10 @@ const ComplaintTracking = () => {
                       <button
                         key={value}
                         onClick={() => handleRating(value)}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                          value <= rating
-                            ? 'bg-yellow-400 text-white'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600'
-                        }`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${value <= rating
+                          ? 'bg-yellow-400 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          }`}
                       >
                         <Star className="w-5 h-5" />
                       </button>

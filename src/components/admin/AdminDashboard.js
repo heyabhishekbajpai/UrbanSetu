@@ -23,15 +23,25 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { supabase } from '../../supabaseClient';
 import { format } from 'date-fns';
 
-// Create custom red markers
-const createRedIcon = () => {
+// Create custom markers based on priority
+const createPriorityIcon = (priority) => {
+  let color;
+  switch (priority?.toLowerCase()) {
+    case 'urgent': color = '#dc2626'; break; // red-600
+    case 'high': color = '#ea580c'; break;   // orange-600
+    case 'medium': color = '#ca8a04'; break; // yellow-600
+    case 'low': color = '#16a34a'; break;    // green-600
+    default: color = '#4b5563';              // gray-600
+  }
+
   return L.divIcon({
-    className: 'custom-red-marker',
+    className: `custom-marker-${priority}`,
     html: `
       <div style="
-        background-color: #dc2626;
+        background-color: ${color};
         width: 25px;
         height: 25px;
         border-radius: 50% 50% 50% 0;
@@ -72,113 +82,150 @@ const AdminDashboard = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Map data for Lucknow with 4 random pins
-  const mapPins = [
-    {
-      id: 1,
-      position: [26.8467, 80.9462], // Lucknow center
-      title: 'Pothole Complaint',
-      description: 'Large pothole on main road causing traffic issues',
-      status: 'pending',
-      priority: 'high'
-    },
-    {
-      id: 2,
-      position: [26.8523, 80.9345], // Gomti Nagar area
-      title: 'Street Light Issue',
-      description: 'Broken street light near park area',
-      status: 'in_progress',
-      priority: 'medium'
-    },
-    {
-      id: 3,
-      position: [26.8389, 80.9556], // Hazratganj area
-      title: 'Garbage Collection',
-      description: 'Garbage not being collected regularly',
-      status: 'resolved',
-      priority: 'high'
-    },
-    {
-      id: 4,
-      position: [26.8615, 80.9234], // Alambagh area
-      title: 'Sewage Overflow',
-      description: 'Sewage water overflowing on the street',
-      status: 'pending',
-      priority: 'urgent'
-    }
-  ];
 
-  // Mock data - replace with actual API calls
+
+  const [isShowingMockData, setIsShowingMockData] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(true); // Default to true to avoid flash, check immediately
+
+  // Check if user is actually an admin in the DB
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (data && data.role !== 'admin') {
+        setIsAdmin(false);
+        console.warn('User is accessing Admin Dashboard but does not have "admin" role in DB.');
+      }
+    };
+
+    checkAdminRole();
+  }, [user]);
+
+  const [error, setError] = useState(null);
+
+  // Fetch data from Supabase
   useEffect(() => {
     const loadData = async () => {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      try {
+        setError(null);
+        console.log('Fetching complaints for Admin Dashboard...');
 
-      const mockComplaints = [
-        {
-          id: '1',
-          title: 'Pothole on Main Road',
-          description: 'Large pothole causing traffic issues',
-          status: 'pending',
-          priority: 'high',
-          category: 'Pothole',
-          department: 'Road Authority',
-          location: 'Main Road, Sector 15',
-          reporter: 'Priya Sharma',
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg'
-        },
-        {
-          id: '2',
-          title: 'Broken Street Light',
-          description: 'Street light not working near park',
-          status: 'in_progress',
-          priority: 'medium',
-          category: 'StreetLight',
-          department: 'Electrical Department',
-          location: 'Park Road, Sector 12',
-          reporter: 'Rajesh Kumar',
-          createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-          image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/streetlight.jpg'
-        },
-        {
-          id: '3',
-          title: 'Garbage Accumulation',
-          description: 'Garbage not being collected regularly',
-          status: 'resolved',
-          priority: 'high',
-          category: 'Garbage',
-          department: 'Sanitation Department',
-          location: 'Residential Area, Sector 8',
-          reporter: 'Anita Singh',
-          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-          image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png'
-        },
-        {
-          id: '4',
-          title: 'Sewage Overflow',
-          description: 'Sewage water overflowing on the street',
-          status: 'pending',
-          priority: 'urgent',
-          category: 'Sewage',
-          department: 'Water & Sewage Board',
-          location: 'Market Area, Sector 5',
-          reporter: 'Vikram Patel',
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/water.jpg'
+        // Fetch complaints first
+        const { data: complaintsData, error: fetchError } = await supabase
+          .from('complaints')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (fetchError) {
+          console.error('Supabase fetch error:', fetchError);
+          throw fetchError;
         }
-      ];
 
-      setComplaints(mockComplaints);
-      setStats({
-        total: mockComplaints.length,
-        pending: mockComplaints.filter(c => c.status === 'pending').length,
-        inProgress: mockComplaints.filter(c => c.status === 'in_progress').length,
-        resolved: mockComplaints.filter(c => c.status === 'resolved').length,
-        today: mockComplaints.filter(c =>
-          new Date(c.createdAt).toDateString() === new Date().toDateString()
-        ).length
-      });
+        console.log(`Fetched ${complaintsData?.length || 0} complaints from DB.`);
+
+        if (complaintsData && complaintsData.length > 0) {
+          // Fetch profiles for these complaints manually to avoid relationship issues
+          const userIds = [...new Set(complaintsData.map(c => c.user_id))];
+          const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select('id, full_name')
+            .in('id', userIds);
+
+          if (profilesError) console.error('Error fetching profiles:', profilesError);
+
+          const profilesMap = (profilesData || []).reduce((acc, profile) => {
+            acc[profile.id] = profile.full_name;
+            return acc;
+          }, {});
+
+          // Transform data to match component structure
+          const formattedComplaints = complaintsData.map(c => ({
+            id: c.id,
+            title: `${c.category} at ${c.address ? c.address.split(',')[0] : 'Unknown Location'}`,
+            description: c.description,
+            status: c.status,
+            priority: c.priority,
+            category: c.category,
+            department: c.department,
+            location: c.address || 'No address provided',
+            reporter: profilesMap[c.user_id] || 'Anonymous',
+            createdAt: new Date(c.created_at),
+            image: c.image_url || 'https://via.placeholder.com/150',
+            latitude: c.latitude,
+            longitude: c.longitude
+          }));
+
+          setComplaints(formattedComplaints);
+          setIsShowingMockData(false);
+
+          // Calculate stats for real data
+          setStats({
+            total: formattedComplaints.length,
+            pending: formattedComplaints.filter(c => c.status === 'pending').length,
+            inProgress: formattedComplaints.filter(c => c.status === 'in-progress').length,
+            resolved: formattedComplaints.filter(c => c.status === 'resolved').length,
+            today: formattedComplaints.filter(c =>
+              new Date(c.createdAt).toDateString() === new Date().toDateString()
+            ).length
+          });
+        } else {
+          console.log('No real complaints found in DB. Falling back to mock data.');
+          // Use Mock Data if no real data exists
+          const mockComplaints = [
+            {
+              id: 'mock-1',
+              title: 'Garbage Accumulation',
+              description: 'Garbage not being collected regularly',
+              status: 'resolved',
+              priority: 'high',
+              category: 'Garbage',
+              department: 'Sanitation Department',
+              location: 'Residential Area, Sector 8',
+              reporter: 'Anita Singh (Demo)',
+              createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+              image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/garbage.png',
+              latitude: 26.8467,
+              longitude: 80.9462
+            },
+            {
+              id: 'mock-2',
+              title: 'Pothole on Main Road',
+              description: 'Large pothole causing traffic issues',
+              status: 'pending',
+              priority: 'high',
+              category: 'Pothole',
+              department: 'Road Authority',
+              location: 'Main Road, Sector 15',
+              reporter: 'Priya Sharma (Demo)',
+              createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+              image: 'https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/pothole.jpg',
+              latitude: 26.8523,
+              longitude: 80.9345
+            }
+          ];
+
+          setComplaints(mockComplaints);
+          setIsShowingMockData(true);
+
+          setStats({
+            total: mockComplaints.length,
+            pending: mockComplaints.filter(c => c.status === 'pending').length,
+            inProgress: mockComplaints.filter(c => c.status === 'in_progress').length,
+            resolved: mockComplaints.filter(c => c.status === 'resolved').length,
+            today: 0
+          });
+        }
+
+      } catch (error) {
+        console.error('Error fetching complaints:', error);
+        setError(error.message);
+      }
     };
 
     loadData();
@@ -352,18 +399,22 @@ const AdminDashboard = () => {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-                {mapPins.map((pin) => (
-                  <Marker key={pin.id} position={pin.position} icon={createRedIcon()}>
+                {complaints.filter(c => c.latitude && c.longitude).map((complaint) => (
+                  <Marker
+                    key={complaint.id}
+                    position={[complaint.latitude, complaint.longitude]}
+                    icon={createPriorityIcon(complaint.priority)}
+                  >
                     <Popup>
                       <div className="p-2">
-                        <h3 className="font-semibold text-gray-900 mb-1">{pin.title}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{pin.description}</p>
+                        <h3 className="font-semibold text-gray-900 mb-1">{complaint.title}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{complaint.description}</p>
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(pin.status)}`}>
-                            {pin.status.replace('_', ' ').toUpperCase()}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(complaint.status)}`}>
+                            {complaint.status.replace('_', ' ').toUpperCase()}
                           </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(pin.priority)}`}>
-                            {pin.priority.toUpperCase()}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(complaint.priority)}`}>
+                            {complaint.priority.toUpperCase()}
                           </span>
                         </div>
                       </div>
@@ -382,9 +433,47 @@ const AdminDashboard = () => {
           transition={{ delay: 0.15 }}
           className="mb-6"
         >
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Complaints Management
-          </h2>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Complaints Management
+            </h2>
+            {!isAdmin && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center space-x-2">
+                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Access Restricted
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    Your account does not have the <strong>Admin</strong> role in the database. You cannot see other users' complaints.
+                    <br />
+                    Please run the SQL command in <code>FIX_ADMIN_ROLE.md</code> to promote your user.
+                  </p>
+                </div>
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center space-x-2 mb-4">
+                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Error Loading Complaints
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    {error}
+                  </p>
+                </div>
+              </div>
+            )}
+            {isShowingMockData && isAdmin && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center space-x-2">
+                <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  Currently showing demo data. Registered complaints will appear here automatically, replacing these examples.
+                </p>
+              </div>
+            )}
+          </div>
         </motion.div>
 
         {/* Filters and Search */}
@@ -462,7 +551,8 @@ const AdminDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+                    onClick={() => navigate(`/admin/complaint/${complaint.id}`)}
+                    className="hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
@@ -508,7 +598,13 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
-                        <button className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/admin/complaint/${complaint.id}`);
+                          }}
+                          className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300">

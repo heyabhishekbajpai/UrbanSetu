@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import * as tmImage from '@teachablemachine/image';
-import { 
-  Camera, 
-  Upload, 
-  MapPin, 
-  ArrowLeft, 
-  CheckCircle, 
+import {
+  Camera,
+  Upload,
+  MapPin,
+  ArrowLeft,
+  CheckCircle,
   AlertCircle,
   Loader2,
   X,
@@ -21,6 +21,8 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import GoogleMap from '../common/GoogleMap';
+import { supabase } from '../../supabaseClient';
+import toast from 'react-hot-toast';
 
 // AI Model Integration
 const AI_MODEL_URL = '/models/';
@@ -97,18 +99,18 @@ const ReportComplaint = () => {
         console.log('Loading AI model from local files...');
         console.log('Model URL:', AI_MODEL_URL + 'model.json');
         console.log('Metadata URL:', AI_MODEL_URL + 'metadata.json');
-        
+
         // Test if files are accessible
         const modelResponse = await fetch(AI_MODEL_URL + 'model.json');
         const metadataResponse = await fetch(AI_MODEL_URL + 'metadata.json');
-        
+
         if (!modelResponse.ok) {
           throw new Error(`Model file not accessible: ${modelResponse.status}`);
         }
         if (!metadataResponse.ok) {
           throw new Error(`Metadata file not accessible: ${metadataResponse.status}`);
         }
-        
+
         console.log('Model files are accessible, loading with Teachable Machine...');
         const model = await tmImage.load(AI_MODEL_URL + 'model.json', AI_MODEL_URL + 'metadata.json');
         setModel(model);
@@ -118,7 +120,7 @@ const ReportComplaint = () => {
       } catch (error) {
         console.error('Error loading local AI model:', error);
         console.log('Trying fallback online model...');
-        
+
         try {
           // Try fallback online model
           const fallbackModel = await tmImage.load(FALLBACK_MODEL_URL + 'model.json', FALLBACK_MODEL_URL + 'metadata.json');
@@ -142,33 +144,33 @@ const ReportComplaint = () => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const recognitionInstance = new SpeechRecognition();
-      
+
       recognitionInstance.continuous = false;
       recognitionInstance.interimResults = false;
       recognitionInstance.lang = 'en-US';
-      
+
       recognitionInstance.onstart = () => {
         setIsListening(true);
         console.log('Listening... Speak now');
       };
-      
+
       recognitionInstance.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         const currentDescription = getValues('description') || '';
         setValue('description', currentDescription + transcript);
         console.log('Voice transcribed successfully');
       };
-      
+
       recognitionInstance.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         console.error(`Speech recognition error: ${event.error}`);
         setIsListening(false);
       };
-      
+
       recognitionInstance.onend = () => {
         setIsListening(false);
       };
-      
+
       setRecognition(recognitionInstance);
     } else {
       console.warn('Speech recognition not supported in this browser');
@@ -209,21 +211,21 @@ const ReportComplaint = () => {
           const headers = {
             'User-Agent': 'UrbanSetu/1.0'
           };
-          
+
           const response = await fetch(service.url, { headers });
           const data = await response.json();
-          
+
           if (service.type === 'nominatim') {
             // OpenStreetMap Nominatim response
             if (data.address) {
               const addr = data.address;
               const addressParts = [];
-              
+
               // Build detailed address from most specific to least specific
               // Prioritize area/colony names and specific locations
               if (addr.house_number) addressParts.push(addr.house_number);
               if (addr.road || addr.street) addressParts.push(addr.road || addr.street);
-              
+
               // Prioritize area/colony names - these are most important for pinpoint location
               if (addr.suburb) addressParts.push(addr.suburb);
               if (addr.neighbourhood) addressParts.push(addr.neighbourhood);
@@ -233,27 +235,27 @@ const ReportComplaint = () => {
               if (addr.city_district) addressParts.push(addr.city_district);
               if (addr.district) addressParts.push(addr.district);
               if (addr.borough) addressParts.push(addr.borough);
-              
+
               // Add city for context, but avoid duplicates
               if (addr.city && !addressParts.includes(addr.city)) addressParts.push(addr.city);
               if (addr.town && !addressParts.includes(addr.town)) addressParts.push(addr.town);
               if (addr.municipality && !addressParts.includes(addr.municipality)) addressParts.push(addr.municipality);
-              
+
               if (addr.county) addressParts.push(addr.county);
               if (addr.state || addr.province) addressParts.push(addr.state || addr.province);
               if (addr.postcode) addressParts.push(addr.postcode);
               // Don't add country to keep address shorter and more local
-              
+
               const fullAddress = addressParts.join(', ');
               if (fullAddress.length > 15) { // Ensure we got a meaningful address
                 return fullAddress;
               }
-              
+
               // If parsed address is too short, try using display_name
               if (data.display_name && data.display_name.length > fullAddress.length) {
                 return data.display_name;
               }
-              
+
               // If we still don't have a good address, try to build one from available data
               if (fullAddress.length < 10) {
                 const fallbackParts = [];
@@ -262,7 +264,7 @@ const ReportComplaint = () => {
                 if (addr.city && !fallbackParts.includes(addr.city)) fallbackParts.push(addr.city);
                 if (addr.state && !fallbackParts.includes(addr.state)) fallbackParts.push(addr.state);
                 if (addr.postcode) fallbackParts.push(addr.postcode);
-                
+
                 if (fallbackParts.length > 0) {
                   return fallbackParts.join(', ');
                 }
@@ -272,25 +274,25 @@ const ReportComplaint = () => {
             // BigDataCloud response
             if (data.localityInfo && data.localityInfo.administrative) {
               const addressParts = [];
-              
+
               // Try to get more detailed information from BigDataCloud
               if (data.locality) addressParts.push(data.locality);
               if (data.principalSubdivision) addressParts.push(data.principalSubdivision);
               if (data.countryName) addressParts.push(data.countryName);
-              
+
               const address = addressParts.join(', ');
               if (address.length > 15) {
                 return address;
               }
             }
-            
+
             // Also try the main data fields
             if (data.locality || data.principalSubdivision || data.countryName) {
               const addressParts = [];
               if (data.locality) addressParts.push(data.locality);
               if (data.principalSubdivision) addressParts.push(data.principalSubdivision);
               if (data.countryName) addressParts.push(data.countryName);
-              
+
               const address = addressParts.join(', ');
               if (address.length > 15) {
                 return address;
@@ -301,7 +303,7 @@ const ReportComplaint = () => {
             if (data.address) {
               const addr = data.address;
               const addressParts = [];
-              
+
               // Try to get more specific information
               if (addr.house_number) addressParts.push(addr.house_number);
               if (addr.road || addr.street) addressParts.push(addr.road || addr.street);
@@ -310,13 +312,13 @@ const ReportComplaint = () => {
               if (addr.city || addr.town) addressParts.push(addr.city || addr.town);
               if (addr.state) addressParts.push(addr.state);
               if (addr.postcode) addressParts.push(addr.postcode);
-              
+
               const fullAddress = addressParts.join(', ');
               if (fullAddress.length > 15) {
                 return fullAddress;
               }
             }
-            
+
             // Fallback to display_name if available
             if (data.display_name) {
               return data.display_name;
@@ -327,7 +329,7 @@ const ReportComplaint = () => {
           continue;
         }
       }
-      
+
       // If all services fail, try to build a basic address from coordinates
       // This is a fallback when no geocoding service works
       return `GPS Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
@@ -342,12 +344,12 @@ const ReportComplaint = () => {
     setCurrentLocation(location);
     setValue('latitude', location.latitude);
     setValue('longitude', location.longitude);
-    
+
     // Get readable address using reverse geocoding
     const address = await reverseGeocode(location.latitude, location.longitude);
     setCurrentAddress(address);
     setValue('address', address);
-    
+
     console.log(`Location updated: ${address}`);
   }, [setValue, reverseGeocode]);
 
@@ -379,12 +381,12 @@ const ReportComplaint = () => {
           setCurrentLocation({ latitude, longitude });
           setValue('latitude', latitude);
           setValue('longitude', longitude);
-          
+
           // Get readable address using reverse geocoding
           const address = await reverseGeocode(latitude, longitude);
           setCurrentAddress(address);
           setValue('address', address);
-          
+
           setIsLoadingLocation(false);
           setLocationLoaded(true);
         },
@@ -404,10 +406,10 @@ const ReportComplaint = () => {
   const captureImage = () => {
     setIsCapturing(true);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      navigator.mediaDevices.getUserMedia({
+        video: {
           facingMode: 'environment' // Use back camera on mobile
-        } 
+        }
       })
         .then((stream) => {
           if (videoRef.current) {
@@ -432,20 +434,20 @@ const ReportComplaint = () => {
       const canvas = canvasRef.current;
       const video = videoRef.current;
       const context = canvas.getContext('2d');
-      
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0);
-      
+
       const imageData = canvas.toDataURL('image/jpeg');
       setCapturedImage(imageData);
-      
+
       // Stop camera
       const stream = video.srcObject;
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
-      
+
       setIsCapturing(false);
       processImageWithAI(imageData);
     }
@@ -454,7 +456,7 @@ const ReportComplaint = () => {
   // Process image with AI
   const processImageWithAI = async (imageData) => {
     setIsProcessing(true);
-    
+
     try {
       if (!model) {
         console.error('AI model not loaded yet. Please wait...');
@@ -465,7 +467,7 @@ const ReportComplaint = () => {
       // Create an image element from the data URL
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
@@ -474,11 +476,11 @@ const ReportComplaint = () => {
 
       // Get prediction from the model
       const prediction = await model.predict(img);
-      
+
       // Find the highest confidence prediction
       let maxConfidence = 0;
       let predictedClass = '';
-      
+
       for (let i = 0; i < prediction.length; i++) {
         if (prediction[i].probability > maxConfidence) {
           maxConfidence = prediction[i].probability;
@@ -490,22 +492,22 @@ const ReportComplaint = () => {
         className: predictedClass,
         probability: maxConfidence
       };
-      
+
       setAiPrediction(aiPrediction);
-      
+
       if (aiPrediction.probability > CONFIDENCE_THRESHOLD) {
         const category = aiPrediction.className;
         setValue('category', category);
         setValue('department', DEPARTMENT_MAPPING[category]);
-        
+
         // Auto-generate description
         const template = DESCRIPTION_TEMPLATES[category];
-        const address = currentAddress || (currentLocation ? 
-          `${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}` : 
+        const address = currentAddress || (currentLocation ?
+          `${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}` :
           '[ADDRESS]');
         const description = template.replace('[ADDRESS]', address);
         setValue('description', description);
-        
+
         console.log(`AI detected: ${category} (${(aiPrediction.probability * 100).toFixed(1)}% confidence)`);
       } else {
         console.warn('AI confidence too low. Please select category manually.');
@@ -532,38 +534,83 @@ const ReportComplaint = () => {
     }
   };
 
+  // Helper to convert data URL to Blob
+  const dataURLtoBlob = (dataurl) => {
+    try {
+      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new Blob([u8arr], { type: mime });
+    } catch (e) {
+      console.error('Error converting image:', e);
+      return null;
+    }
+  }
+
   // Submit form
   const onSubmit = async (data) => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const complaintData = {
-        ...data,
-        image: capturedImage,
-        aiPrediction: aiPrediction,
-        userId: user.id,
-        createdAt: new Date().toISOString(),
-        status: 'pending'
-      };
-      
-      console.log('Complaint submitted:', complaintData);
-      console.log('Complaint submitted successfully!');
-      
-      // Store complaint submission flag in localStorage to trigger progress bar
+      if (!capturedImage) {
+        toast.error('Please capture or upload an image of the issue.');
+        return;
+      }
+
+      const toastId = toast.loading('Submitting complaint...');
+
+      // 1. Upload Image
+      const blob = dataURLtoBlob(capturedImage);
+      if (!blob) throw new Error('Failed to process image');
+
+      const fileName = `${user.id}/${Date.now()}.jpg`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('complaint-images')
+        .upload(fileName, blob, {
+          contentType: 'image/jpeg',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('complaint-images')
+        .getPublicUrl(fileName);
+
+      // 3. Insert Complaint Record
+      const { error: insertError } = await supabase
+        .from('complaints')
+        .insert({
+          user_id: user.id,
+          category: data.category,
+          department: data.department,
+          priority: data.priority,
+          description: data.description,
+          latitude: data.latitude ? parseFloat(data.latitude) : null,
+          longitude: data.longitude ? parseFloat(data.longitude) : null,
+          address: data.address,
+          image_url: publicUrl,
+          ai_prediction: aiPrediction,
+          status: 'pending'
+        });
+
+      if (insertError) throw insertError;
+
+      toast.dismiss(toastId);
+      toast.success('Complaint submitted successfully!');
+
+      // Store complaint submission flag in localStorage to trigger progress bar (legacy/UI purposes)
       const submissionTime = new Date().toISOString();
       localStorage.setItem('complaintSubmitted', 'true');
       localStorage.setItem('complaintSubmittedTime', submissionTime);
-      
-      console.log('Stored localStorage flags:', {
-        complaintSubmitted: localStorage.getItem('complaintSubmitted'),
-        complaintSubmittedTime: localStorage.getItem('complaintSubmittedTime')
-      });
-      
+
       navigate('/citizen');
     } catch (error) {
       console.error('Error submitting complaint:', error);
-      console.error('Failed to submit complaint');
+      toast.dismiss();
+      toast.error(error.message || 'Failed to submit complaint');
     }
   };
 
@@ -592,7 +639,7 @@ const ReportComplaint = () => {
                 </p>
               </div>
             </div>
-            
+
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors flex-shrink-0"
@@ -680,7 +727,7 @@ const ReportComplaint = () => {
                   <p className="text-gray-600 dark:text-gray-400">
                     Take a clear photo or upload an image of the civic issue
                   </p>
-                  
+
                   {/* Model Loading Status */}
                   {modelLoading && (
                     <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -707,7 +754,7 @@ const ReportComplaint = () => {
                         <Camera className="w-5 h-5" />
                         <span>{isCapturing ? 'Accessing Camera...' : 'Take Photo'}</span>
                       </button>
-                      
+
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
@@ -799,7 +846,7 @@ const ReportComplaint = () => {
                           </span>
                         </div>
                         <p className="text-green-700 dark:text-green-300">
-                          Detected: <strong>{aiPrediction.className}</strong> 
+                          Detected: <strong>{aiPrediction.className}</strong>
                           {' '}({Math.round(aiPrediction.probability * 100)}% confidence)
                         </p>
                       </div>
@@ -849,9 +896,8 @@ const ReportComplaint = () => {
                     </label>
                     <select
                       {...register('category', { required: 'Please select a category' })}
-                      className={`input-field dark:input-field-dark ${
-                        errors.category ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                      }`}
+                      className={`input-field dark:input-field-dark ${errors.category ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                        }`}
                     >
                       <option value="">Select Category</option>
                       {AI_CLASSES.map((category) => (
@@ -905,20 +951,18 @@ const ReportComplaint = () => {
                       <textarea
                         {...register('description', { required: 'Please provide a description' })}
                         rows={4}
-                        className={`input-field dark:input-field-dark pr-12 ${
-                          errors.description ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                        }`}
+                        className={`input-field dark:input-field-dark pr-12 ${errors.description ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                          }`}
                         placeholder="Describe the issue in detail..."
                       />
                       <button
                         type="button"
                         onClick={isListening ? stopVoiceTranscription : startVoiceTranscription}
                         disabled={!recognition}
-                        className={`absolute right-3 top-3 p-2 rounded-full transition-all duration-200 ${
-                          isListening 
-                            ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                            : 'bg-blue-500 hover:bg-blue-600 text-white'
-                        } ${!recognition ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
+                        className={`absolute right-3 top-3 p-2 rounded-full transition-all duration-200 ${isListening
+                          ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          } ${!recognition ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}`}
                         title={isListening ? 'Stop voice transcription' : 'Start voice transcription'}
                       >
                         {isListening ? (
@@ -1005,14 +1049,13 @@ const ReportComplaint = () => {
                           </p>
                         </div>
                       )}
-                      
+
                       <div className="space-y-2">
                         <div className="flex space-x-2">
                           <input
                             {...register('address', { required: 'Please provide the address' })}
-                            className={`flex-1 input-field dark:input-field-dark ${
-                              errors.address ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                            }`}
+                            className={`flex-1 input-field dark:input-field-dark ${errors.address ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                              }`}
                             placeholder={currentAddress || "Enter the complete address (House No, Street, Area, City, PIN)"}
                             defaultValue={currentAddress || ''}
                           />
@@ -1038,7 +1081,7 @@ const ReportComplaint = () => {
                     {errors.address && (
                       <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
                     )}
-                    
+
                     {/* Google Map */}
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

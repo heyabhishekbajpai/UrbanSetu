@@ -14,6 +14,7 @@ import SupabaseTest from './components/SupabaseTest';
 import DebugLogin from './components/DebugLogin';
 import CitizenDashboard from './components/citizen/CitizenDashboard';
 import AdminDashboard from './components/admin/AdminDashboard';
+import AdminComplaintDetail from './components/admin/AdminComplaintDetail';
 import ReportComplaint from './components/citizen/ReportComplaint';
 import ComplaintTracking from './components/citizen/ComplaintTracking';
 import ProfilePage from './components/ProfilePage';
@@ -56,6 +57,11 @@ function App() {
               <Route path="/admin" element={
                 <ProtectedRoute userType="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/complaint/:id" element={
+                <ProtectedRoute userType="admin">
+                  <AdminComplaintDetail />
                 </ProtectedRoute>
               } />
 

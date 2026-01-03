@@ -60,6 +60,71 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- ==========================================
+-- COMPLAINTS TABLE SETUP
+-- ==========================================
+
+create table complaints (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users not null,
+  category text not null,
+  department text,
+  priority text default 'medium',
+  description text,
+  status text default 'pending' check (status in ('pending', 'in-progress', 'resolved', 'rejected')),
+  latitude double precision,
+  longitude double precision,
+  address text,
+  image_url text,
+  ai_prediction jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Enable RLS
+alter table complaints enable row level security;
+
+-- Policies for Complaints
+-- 1. Citizens can view their own complaints
+create policy "Citizens can view own complaints"
+  on complaints for select
+  using ( auth.uid() = user_id );
+
+-- 2. Admins can view all complaints (assuming admin role check)
+-- Note: This requires a way to check role in RLS. A common pattern is a helper function or checking public.profiles
+create policy "Admins can view all complaints"
+  on complaints for select
+  using ( 
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid() and profiles.role = 'admin'
+    )
+  );
+
+-- 3. Citizens can insert their own complaints
+create policy "Citizens can insert own complaints"
+  on complaints for insert
+  with check ( auth.uid() = user_id );
+
+-- 4. Admins can update complaints (status, etc.)
+create policy "Admins can update complaints"
+  on complaints for update
+  using (
+    exists (
+      select 1 from profiles
+      where profiles.id = auth.uid() and profiles.role = 'admin'
+    )
+  );
+
+-- ==========================================
+-- STORAGE SETUP (Run this in Storage > Buckets)
+-- ==========================================
+-- 1. Create a new public bucket named 'complaint-images'
+-- 2. Add policies:
+--    - SELECT: Enable for all (Public)
+--    - INSERT: Enable for authenticated users
+--    - UPDATE: Enable for authenticated users (owners)
 ```
 
 ## Google OAuth Setup
