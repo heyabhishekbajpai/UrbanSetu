@@ -94,3 +94,4 @@ server.js
 serve.py
 setup.sh
 demo.html
+.env

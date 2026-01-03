@@ -11,12 +11,27 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [userType, setUserType] = useState('citizen');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+
+  // Phone Login State
+  const [isPhoneLogin, setIsPhoneLogin] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
+  const [showOtpInput, setShowOtpInput] = useState(false);
+
+  const { login, loginWithGoogle, loginWithPhone, verifyOtp, user, loading: authLoading } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || (userType === 'admin' ? '/admin' : '/citizen');
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (user && !authLoading) {
+      const destination = user.userType === 'admin' ? '/admin' : '/citizen';
+      navigate(destination, { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   const {
     register,
@@ -27,14 +42,42 @@ const LoginPage = () => {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      console.log('Submitting login form...');
       const result = await login(data.email, data.password, userType);
+      console.log('Login result:', result);
+
       if (result.success) {
+        console.log('Navigating to:', from);
         navigate(from, { replace: true });
+      } else {
+        console.log('Login failed (success=false)');
       }
     } catch (error) {
+      console.error('Login submit error:', error);
       toast.error('Login failed. Please try again.');
     } finally {
+      console.log('Login submit finally block');
       setLoading(false);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (!phoneNumber) return;
+    setLoading(true);
+    const result = await loginWithPhone(phoneNumber);
+    setLoading(false);
+    if (result.success) {
+      setShowOtpInput(true);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp) return;
+    setLoading(true);
+    const result = await verifyOtp(phoneNumber, otp, userType);
+    setLoading(false);
+    if (result.success) {
+      navigate(from, { replace: true });
     }
   };
 
@@ -49,7 +92,7 @@ const LoginPage = () => {
         >
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-              <img src="https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png" alt="UrbanSetu Logo" className="w-10 h-10 object-contain" />
+              <img src={isDark ? "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logodark.png" : "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png"} alt="UrbanSetu Logo" className="w-10 h-10 object-contain" />
             </div>
             <span className="text-2xl font-bold text-gradient">UrbanSetu</span>
           </div>
@@ -68,15 +111,28 @@ const LoginPage = () => {
           transition={{ delay: 0.1 }}
           className="mb-6"
         >
-          <div className="flex bg-gray-100 dark:bg-dark-700 rounded-lg p-1">
+          <div className="flex bg-gray-100 dark:bg-dark-700 rounded-lg p-1 relative">
+            {/* Animated Background Indicator */}
+            <motion.div
+              className="absolute top-1 bottom-1 bg-white dark:bg-dark-600 rounded-md shadow-sm"
+              layoutId="userTypeIndicator"
+              initial={false}
+              animate={{
+                left: userType === 'citizen' ? '4px' : '50%',
+              }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              style={{
+                width: 'calc(50% - 4px)',
+              }}
+            />
+
             <button
               type="button"
               onClick={() => setUserType('citizen')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all ${
-                userType === 'citizen'
-                  ? 'bg-white dark:bg-dark-600 text-primary-600 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
+              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-colors relative z-10 ${userType === 'citizen'
+                ? 'text-primary-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               <User className="w-4 h-4" />
               <span className="font-medium">Citizen</span>
@@ -84,11 +140,10 @@ const LoginPage = () => {
             <button
               type="button"
               onClick={() => setUserType('admin')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all ${
-                userType === 'admin'
-                  ? 'bg-white dark:bg-dark-600 text-primary-600 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
+              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-colors relative z-10 ${userType === 'admin'
+                ? 'text-primary-600'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               <Smartphone className="w-4 h-4" />
               <span className="font-medium">Admin</span>
@@ -120,9 +175,8 @@ const LoginPage = () => {
                       message: 'Invalid email address',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-16 ${
-                    errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                  }`}
+                  className={`input-field dark:input-field-dark pl-16 ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                    }`}
                   style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your email"
                 />
@@ -148,9 +202,8 @@ const LoginPage = () => {
                       message: 'Password must be at least 6 characters',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-16 pr-10 ${
-                    errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                  }`}
+                  className={`input-field dark:input-field-dark pl-16 pr-10 ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                    }`}
                   style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your password"
                 />
@@ -217,53 +270,135 @@ const LoginPage = () => {
             </div>
 
             {/* Social Login */}
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-dark-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                <span className="ml-2">Google</span>
-              </button>
-              <button
-                type="button"
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-dark-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
-              >
-                <Smartphone className="w-5 h-5" />
-                <span className="ml-2">Phone</span>
-              </button>
+            {/* Social Login / Phone Login */}
+            <div className="mt-6">
+              {!isPhoneLogin ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => loginWithGoogle(userType)}
+                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-dark-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="currentColor"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="currentColor"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      />
+                      <path
+                        fill="currentColor"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      />
+                    </svg>
+                    <span className="ml-2">Google</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPhoneLogin(true)}
+                    className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-dark-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
+                  >
+                    <Smartphone className="w-5 h-5" />
+                    <span className="ml-2">Phone</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {!showOtpInput ? (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Phone Number
+                      </label>
+                      <div className="flex space-x-2">
+                        <input
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          placeholder="+91 9876543210"
+                          className="flex-1 input-field dark:input-field-dark"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSendOtp}
+                          disabled={!phoneNumber || loading}
+                          className="btn-primary px-4 py-2 text-sm whitespace-nowrap"
+                        >
+                          {loading ? 'Sending...' : 'Send OTP'}
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsPhoneLogin(false)}
+                        className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      >
+                        Back to options
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Enter OTP
+                      </label>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value)}
+                          placeholder="123456"
+                          className="flex-1 input-field dark:input-field-dark"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyOtp}
+                          disabled={!otp || loading}
+                          className="btn-primary px-4 py-2 text-sm whitespace-nowrap"
+                        >
+                          {loading ? 'Verifying...' : 'Verify'}
+                        </button>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <button
+                          type="button"
+                          onClick={() => setShowOtpInput(false)}
+                          className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                          Change Number
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSendOtp}
+                          className="text-xs text-primary-600 hover:text-primary-500"
+                        >
+                          Resend OTP
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Sign Up Link */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
-              >
-                Sign up
-              </Link>
-            </p>
-          </div>
+          {userType === 'citizen' && (
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Don't have an account?{' '}
+                <Link
+                  to="/register"
+                  className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          )}
         </motion.div>
 
         {/* Theme Toggle */}

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  MapPin, 
-  Bell, 
-  User, 
+import {
+  MapPin,
+  Bell,
+  User,
   Filter,
   Search,
   MoreVertical,
@@ -60,7 +60,7 @@ const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  
+
   const [complaints, setComplaints] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
@@ -71,7 +71,7 @@ const AdminDashboard = () => {
   });
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Map data for Lucknow with 4 random pins
   const mapPins = [
     {
@@ -113,7 +113,7 @@ const AdminDashboard = () => {
     const loadData = async () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const mockComplaints = [
         {
           id: '1',
@@ -175,7 +175,7 @@ const AdminDashboard = () => {
         pending: mockComplaints.filter(c => c.status === 'pending').length,
         inProgress: mockComplaints.filter(c => c.status === 'in_progress').length,
         resolved: mockComplaints.filter(c => c.status === 'resolved').length,
-        today: mockComplaints.filter(c => 
+        today: mockComplaints.filter(c =>
           new Date(c.createdAt).toDateString() === new Date().toDateString()
         ).length
       });
@@ -206,8 +206,8 @@ const AdminDashboard = () => {
   const filteredComplaints = complaints.filter(complaint => {
     const matchesFilter = selectedFilter === 'all' || complaint.status === selectedFilter;
     const matchesSearch = complaint.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         complaint.reporter.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         complaint.location.toLowerCase().includes(searchQuery.toLowerCase());
+      complaint.reporter.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      complaint.location.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
@@ -219,7 +219,7 @@ const AdminDashboard = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-                <img src="https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png" alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
+                <img src={isDark ? "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logodark.png" : "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png"} alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
               </div>
               <div>
                 <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -230,7 +230,7 @@ const AdminDashboard = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={toggleTheme}

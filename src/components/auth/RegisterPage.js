@@ -54,7 +54,7 @@ const RegisterPage = () => {
         >
           <div className="flex items-center justify-center space-x-2 mb-4">
             <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-              <img src="https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png" alt="UrbanSetu Logo" className="w-10 h-10 object-contain" />
+              <img src={isDark ? "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logodark.png" : "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png"} alt="UrbanSetu Logo" className="w-10 h-10 object-contain" />
             </div>
             <span className="text-2xl font-bold text-gradient">UrbanSetu</span>
           </div>
@@ -77,11 +77,10 @@ const RegisterPage = () => {
             <button
               type="button"
               onClick={() => setUserType('citizen')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all ${
-                userType === 'citizen'
-                  ? 'bg-white dark:bg-dark-600 text-primary-600 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
+              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all ${userType === 'citizen'
+                ? 'bg-white dark:bg-dark-600 text-primary-600 shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               <User className="w-4 h-4" />
               <span className="font-medium">Citizen</span>
@@ -89,11 +88,10 @@ const RegisterPage = () => {
             <button
               type="button"
               onClick={() => setUserType('admin')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all ${
-                userType === 'admin'
-                  ? 'bg-white dark:bg-dark-600 text-primary-600 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-              }`}
+              className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all ${userType === 'admin'
+                ? 'bg-white dark:bg-dark-600 text-primary-600 shadow-sm'
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
             >
               <Building className="w-4 h-4" />
               <span className="font-medium">Admin</span>
@@ -125,9 +123,8 @@ const RegisterPage = () => {
                       message: 'Name must be at least 2 characters',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-16 ${
-                    errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                  }`}
+                  className={`input-field dark:input-field-dark pl-16 ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                    }`}
                   style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your full name"
                 />
@@ -153,9 +150,8 @@ const RegisterPage = () => {
                       message: 'Invalid email address',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-16 ${
-                    errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                  }`}
+                  className={`input-field dark:input-field-dark pl-16 ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                    }`}
                   style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your email"
                 />
@@ -181,9 +177,8 @@ const RegisterPage = () => {
                       message: 'Please enter a valid 10-digit phone number',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-16 ${
-                    errors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                  }`}
+                  className={`input-field dark:input-field-dark pl-16 ${errors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                    }`}
                   style={{ paddingLeft: '4rem' }}
                   placeholder="Enter your phone number"
                 />
@@ -205,9 +200,8 @@ const RegisterPage = () => {
                     {...register('department', {
                       required: userType === 'admin' ? 'Department is required' : false,
                     })}
-                    className={`input-field dark:input-field-dark pl-16 ${
-                      errors.department ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                    }`}
+                    className={`input-field dark:input-field-dark pl-16 ${errors.department ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                      }`}
                     style={{ paddingLeft: '4rem' }}
                   >
                     <option value="">Select Department</option>
@@ -245,9 +239,8 @@ const RegisterPage = () => {
                       message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number',
                     },
                   })}
-                  className={`input-field dark:input-field-dark pl-16 pr-10 ${
-                    errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                  }`}
+                  className={`input-field dark:input-field-dark pl-16 pr-10 ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                    }`}
                   style={{ paddingLeft: '4rem' }}
                   placeholder="Create a password"
                 />
@@ -278,9 +271,8 @@ const RegisterPage = () => {
                     validate: (value) =>
                       value === password || 'Passwords do not match',
                   })}
-                  className={`input-field dark:input-field-dark pl-16 pr-10 ${
-                    errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
-                  }`}
+                  className={`input-field dark:input-field-dark pl-16 pr-10 ${errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                    }`}
                   style={{ paddingLeft: '4rem' }}
                   placeholder="Confirm your password"
                 />

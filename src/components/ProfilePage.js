@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ArrowLeft, 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
+import {
+  ArrowLeft,
+  User,
+  Mail,
+  Phone,
+  MapPin,
   Calendar,
   Edit3,
   Save,
@@ -24,7 +24,7 @@ const ProfilePage = () => {
   const { user, updateProfile, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -83,7 +83,7 @@ const ProfilePage = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <button
                 onClick={toggleTheme}
@@ -115,7 +115,7 @@ const ProfilePage = () => {
                   <Edit3 className="w-4 h-4" />
                 </button>
               </div>
-              
+
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
                 {user?.name}
               </h2>
@@ -123,7 +123,7 @@ const ProfilePage = () => {
                 {user?.userType === 'admin' ? 'Administrator' : 'Citizen'}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Member since {format(new Date(user?.createdAt), 'MMMM yyyy')}
+                Member since {user?.created_at ? format(new Date(user.created_at), 'MMMM yyyy') : 'N/A'}
               </p>
             </div>
 
@@ -203,9 +203,8 @@ const ProfilePage = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className={`input-field dark:input-field-dark pl-10 ${
-                        !isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
-                      }`}
+                      className={`input-field dark:input-field-dark pl-10 ${!isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
+                        }`}
                       style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
@@ -224,9 +223,8 @@ const ProfilePage = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className={`input-field dark:input-field-dark pl-10 ${
-                        !isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
-                      }`}
+                      className={`input-field dark:input-field-dark pl-10 ${!isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
+                        }`}
                       style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
@@ -245,9 +243,8 @@ const ProfilePage = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className={`input-field dark:input-field-dark pl-10 ${
-                        !isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
-                      }`}
+                      className={`input-field dark:input-field-dark pl-10 ${!isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
+                        }`}
                       style={{ paddingLeft: '2.75rem' }}
                     />
                   </div>
@@ -266,9 +263,8 @@ const ProfilePage = () => {
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       rows={3}
-                      className={`input-field dark:input-field-dark pl-10 ${
-                        !isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
-                      }`}
+                      className={`input-field dark:input-field-dark pl-10 ${!isEditing ? 'bg-gray-50 dark:bg-dark-700 cursor-not-allowed' : ''
+                        }`}
                       style={{ paddingLeft: '2.75rem' }}
                       placeholder="Enter your address"
                     />
@@ -315,7 +311,7 @@ const ProfilePage = () => {
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
                   </label>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Globe className="w-5 h-5 text-gray-400 dark:text-gray-500" />
@@ -327,9 +323,9 @@ const ProfilePage = () => {
                     </div>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="sr-only peer" 
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
                       checked={isDark}
                       onChange={toggleTheme}
                     />

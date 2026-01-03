@@ -1,13 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Smartphone, 
-  MapPin, 
-  Camera, 
-  Clock, 
-  Users, 
-  Shield, 
+import {
+  Smartphone,
+  MapPin,
+  Camera,
+  Clock,
+  Users,
+  Shield,
   TrendingUp,
   ArrowRight,
   CheckCircle,
@@ -78,17 +78,17 @@ const LandingPage = () => {
       <nav className="fixed top-0 w-full z-50 glass-effect dark:glass-effect-dark">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center space-x-2"
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-                <img src="https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png" alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
+                <img src={isDark ? "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logodark.png" : "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png"} alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
               </div>
               <span className="text-xl font-bold text-gradient">UrbanSetu</span>
             </motion.div>
-            
+
             <div className="flex items-center space-x-4">
               <button
                 onClick={toggleTheme}
@@ -135,13 +135,17 @@ const LandingPage = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
             >
-              <Link to="/login" className="btn-primary text-lg px-8 py-4">
-                Report an Issue
-                <ArrowRight className="w-5 h-5 ml-2" />
+              <Link
+                to="/login"
+                className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-300 bg-gradient-to-r from-primary-600 to-primary-500 rounded-full hover:from-primary-700 hover:to-primary-600 shadow-lg hover:shadow-primary-500/50 hover:-translate-y-1 overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center">
+                  Report an Issue
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </span>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-full" />
               </Link>
-              <Link to="/register" className="btn-secondary text-lg px-8 py-4">
-                Join as Admin
-              </Link>
+
             </motion.div>
 
             <motion.div
@@ -230,7 +234,7 @@ const LandingPage = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-red-600 font-bold">2</span>
@@ -244,7 +248,7 @@ const LandingPage = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-red-600 font-bold">3</span>
@@ -452,9 +456,7 @@ const LandingPage = () => {
               <Link to="/register" className="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
                 Start as Citizen
               </Link>
-              <Link to="/register" className="bg-primary-700 text-white px-8 py-4 rounded-lg font-semibold hover:bg-primary-800 transition-colors border border-primary-400">
-                Join as Admin
-              </Link>
+
             </div>
           </motion.div>
         </div>
@@ -467,7 +469,7 @@ const LandingPage = () => {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-                  <img src="https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png" alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
+                  <img src={isDark ? "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logodark.png" : "https://raw.githubusercontent.com/heyabhishekbajpai/UrbanSetu/main/public/logo.png"} alt="UrbanSetu Logo" className="w-8 h-8 object-contain" />
                 </div>
                 <span className="text-xl font-bold">UrbanSetu</span>
               </div>
@@ -478,7 +480,7 @@ const LandingPage = () => {
                 आवाज़ उठाओ, बदलाव लाओ
               </p>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
@@ -488,7 +490,7 @@ const LandingPage = () => {
                 <li><a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h3 className="text-lg font-semibold mb-4">Contact</h3>
               <ul className="space-y-2 text-gray-400">
@@ -503,7 +505,7 @@ const LandingPage = () => {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
             <p>&copy; 2025 Urbansetu. All rights reserved. Building better cities, one report at a time.</p>
           </div>

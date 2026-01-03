@@ -8,6 +8,10 @@ import { AuthProvider } from './contexts/AuthContext';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
+import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
+import ResetPasswordPage from './components/auth/ResetPasswordPage';
+import SupabaseTest from './components/SupabaseTest';
+import DebugLogin from './components/DebugLogin';
 import CitizenDashboard from './components/citizen/CitizenDashboard';
 import AdminDashboard from './components/admin/AdminDashboard';
 import ReportComplaint from './components/citizen/ReportComplaint';
@@ -26,7 +30,11 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/test-supabase" element={<SupabaseTest />} />
+              <Route path="/debug-login" element={<DebugLogin />} />
+
               {/* Protected Citizen Routes */}
               <Route path="/citizen" element={
                 <ProtectedRoute userType="citizen">
@@ -43,14 +51,14 @@ function App() {
                   <ComplaintTracking />
                 </ProtectedRoute>
               } />
-              
+
               {/* Protected Admin Routes */}
               <Route path="/admin" element={
                 <ProtectedRoute userType="admin">
                   <AdminDashboard />
                 </ProtectedRoute>
               } />
-              
+
               {/* Profile Route */}
               <Route path="/profile" element={
                 <ProtectedRoute>
@@ -58,7 +66,7 @@ function App() {
                 </ProtectedRoute>
               } />
             </Routes>
-            
+
             {/* Toast Notifications */}
             <Toaster
               position="top-right"
