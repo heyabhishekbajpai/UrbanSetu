@@ -26,7 +26,6 @@ import toast from 'react-hot-toast';
 
 // AI Model Integration
 const AI_MODEL_URL = '/models/';
-const FALLBACK_MODEL_URL = 'https://teachablemachine.withgoogle.com/models/FzFLbZLp9f/';
 const AI_CLASSES = ['Pothole', 'Garbage', 'Sewage', 'StreetLight', 'FallenTree'];
 const CONFIDENCE_THRESHOLD = 0.6;
 
@@ -118,21 +117,8 @@ const ReportComplaint = () => {
         setAiModelLoaded(true);
         console.log('Model loaded successfully:', model);
       } catch (error) {
-        console.error('Error loading local AI model:', error);
-        console.log('Trying fallback online model...');
-
-        try {
-          // Try fallback online model
-          const fallbackModel = await tmImage.load(FALLBACK_MODEL_URL + 'model.json', FALLBACK_MODEL_URL + 'metadata.json');
-          setModel(fallbackModel);
-          setModelLoading(false);
-          setAiModelLoaded(true);
-          console.log('Fallback model loaded successfully:', fallbackModel);
-        } catch (fallbackError) {
-          console.error('Error loading fallback model:', fallbackError);
-          setModelLoading(false);
-          console.error('Failed to load AI model from both local and online sources');
-        }
+        console.error('Error loading AI model:', error);
+        setModelLoading(false);
       }
     };
 
